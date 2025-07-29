@@ -38,11 +38,12 @@ const Register = () => {
       },
     });
 
-    // useEffect(() => {
-        // if (success) {
-        //   navigate("/welcome");
-        // }
-        //}, [success, navigate]);
+    useEffect(() => {
+        if (success) {
+          navigate("/home"); // Redirect nach erfolgreicher Registrierung
+          return;
+        }
+    }, [success, navigate]);
 
 
     if (error) {
