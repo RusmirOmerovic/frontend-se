@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { supabase } from "../supabaseClient";
+import { useNavigate } from "react-router-dom";
 
 const Register = () => {
   const [form, setForm] = useState({
@@ -12,6 +13,7 @@ const Register = () => {
   });
 
   const [error, setError] = useState(null);
+  const navigate = useNavigate(); // ✅ Richtig positioniert!
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -21,17 +23,19 @@ const Register = () => {
     e.preventDefault();
     setError(null);
 
+    // Optional: Backup im sessionStorage
     sessionStorage.setItem("vorname", form.vorname);
     sessionStorage.setItem("nachname", form.nachname);
     sessionStorage.setItem("geburtsdatum", form.geburtsdatum);
     sessionStorage.setItem("matrikelnummer", form.matrikelnummer);
     sessionStorage.setItem("email", form.email);
 
+    // Supabase Signup
     const { data, error } = await supabase.auth.signUp({
       email: form.email,
       password: form.password,
       options: {
-        emailRedirectTo: "https://frontend-se-cyan.vercel.app/verify", // URL für die E-Mail-Bestätigung
+        emailRedirectTo: "https://frontend-se-cyan.vercel.app/verify",
         data: {
           vorname: form.vorname,
           nachname: form.nachname,
@@ -43,17 +47,10 @@ const Register = () => {
 
     if (error) {
       setError(error.message);
-    } else {
-      const userId = data?.user?.id;
-
-      alert("Registrierung erfolgreich. Bitte bestätige deine E-Mail.");
-      navigate("/welcome");
-
+      return;
     }
 
-    console.log(data);
-
-    // Falls erfolgreich, ergänze user_profiles manuell
+    // Insert Profil in user_profiles
     if (data?.user) {
       const { id } = data.user;
 
@@ -61,7 +58,7 @@ const Register = () => {
         .from("user_profiles")
         .insert([
           {
-            id, // <- identisch mit Supabase User UUID
+            id,
             vorname: form.vorname,
             nachname: form.nachname,
             geburtsdatum: form.geburtsdatum,
@@ -75,6 +72,9 @@ const Register = () => {
       }
     }
 
+    // Weiterleitung
+    alert("Registrierung erfolgreich. Bitte bestätige deine E-Mail.");
+    navigate("/welcome");
   };
 
   return (
