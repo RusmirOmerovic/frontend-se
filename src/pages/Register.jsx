@@ -25,7 +25,7 @@ const Register = () => {
       email: form.email,
       password: form.password,
       options: {
-        emailRedirectTo: "https://html-template-se.vercel.app/verify", // URL für die E-Mail-Bestätigung
+        emailRedirectTo: "https://frontend-se-cyan.vercel.app/verify", // URL für die E-Mail-Bestätigung
       },
     });
 

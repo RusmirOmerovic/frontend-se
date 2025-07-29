@@ -8,8 +8,11 @@ const Verify = () => {
 
   useEffect(() => {
     const confirmUser = async () => {
-      const hash = window.location.hash;
-      const token = new URLSearchParams(hash).get("confirmation_token");
+      const tokenFromHash = new URLSearchParams(window.location.hash.slice(1)).get("confirmation_token");
+      const tokenFromQuery = new URLSearchParams(window.location.search).get("confirmation_token");
+      const token = tokenFromHash || tokenFromQuery;
+
+
 
       if (token) {
         const { error } = await supabase.auth.verifyOtp({
