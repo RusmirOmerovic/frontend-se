@@ -7,19 +7,18 @@ const Verify = () => {
 
   useEffect(() => {
     const confirmUser = async () => {
-      const tokenFromHash = new URLSearchParams(window.location.hash.slice(1)).get("confirmation_token");
-      const tokenFromQuery = new URLSearchParams(window.location.search).get("confirmation_token");
-      const token = tokenFromHash || tokenFromQuery;
+      // 1. Token aus der URL lesen (nur aus dem Hash!)
+      const token = new URLSearchParams(window.location.hash.slice(1)).get("confirmation_token");
 
       if (!token) {
         alert("Kein Token gefunden.");
         return;
       }
 
-      // Bestätige den Token (E-Mail-Verifizierung)
+      // 2. Token bei Supabase verifizieren
       const { error: otpError } = await supabase.auth.verifyOtp({
         token,
-        type: "signup",
+        type: "email",
       });
 
       if (otpError) {
@@ -27,7 +26,7 @@ const Verify = () => {
         return;
       }
 
-      // Hole aktuelle Session und User
+      // 3. Aktuelle Session abrufen
       const { data: sessionData } = await supabase.auth.getSession();
       const session = sessionData?.session;
       const user = session?.user;
@@ -37,17 +36,18 @@ const Verify = () => {
         return;
       }
 
-      const { vorname, nachname, geburtsdatum, matrikelnummer } = user.user_metadata;
+      const { id, email, user_metadata } = user;
+      const { vorname, nachname, geburtsdatum, matrikelnummer } = user_metadata;
 
-      // Profil einfügen
+      // 4. Profil in DB einfügen
       const { error: insertError } = await supabase.from("user_profiles").insert([
         {
-          id: user.id,
+          id,
+          email,
           vorname,
           nachname,
           geburtsdatum,
           matrikelnummer,
-          email: user.email,
         },
       ]);
 
@@ -56,16 +56,16 @@ const Verify = () => {
         return;
       }
 
-      // SessionStorage löschen
+      // 5. sessionStorage löschen & Weiterleitung
       sessionStorage.clear();
-
       alert("Deine E-Mail wurde bestätigt. Du kannst dich jetzt einloggen.");
-      //navigate("/login");
+      navigate("/login");
     };
 
     confirmUser();
-  }, [navigate("/welcome")]);
-return null; // Kein JSX, da nur Logik
+  }, [navigate]); // ❗ ACHTUNG: hier `navigate` selbst, NICHT `navigate("/welcome")`
+
+  return null; // Kein sichtbares Element
 };
 
 export default Verify;
