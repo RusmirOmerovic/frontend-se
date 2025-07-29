@@ -10,6 +10,7 @@ import Register from "./pages/Register";
 import ProjectDetail from "./pages/ProjectDetail";
 import ProfileUpdate from "./pages/ProfileUpdate";
 import { Navigate } from "react-router-dom";
+import Welcome from "./pages/Welcome";
 
 
 function App() {
@@ -45,6 +46,7 @@ function App() {
           <Route path="/project/:id" element={<ProjectDetail />} />
           <Route path="/profil" element={user ? <ProfileUpdate /> : <Navigate to="/login" />} />
           <Route path="/verify" element={<Verify />} />
+          <Route path="/welcome" element={<Welcome />} />
           <Route
             path="/dashboard"
             element={

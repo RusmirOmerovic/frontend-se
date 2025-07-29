@@ -23,10 +23,16 @@ const Verify = () => {
         if (!error) {
           const { data: { user } } = await supabase.auth.getUser(); // aktueller User
 
-          const vorname = sessionStorage.getItem("vorname");
-          const nachname = sessionStorage.getItem("nachname");
-          const geburtsdatum = sessionStorage.getItem("geburtsdatum");
-          const matrikelnummer = sessionStorage.getItem("matrikelnummer");
+          const { vorname, nachname, geburtsdatum, matrikelnummer } = user.user_metadata;
+
+          if (user && user.id) {
+            await supabase.from("user_profiles").update({
+              vorname,
+              nachname,
+              geburtsdatum,
+              matrikelnummer,
+            }).eq("id", user.id);
+          }
 
           if (user && user.id) {
             await supabase.from("user_profiles").update({
@@ -51,7 +57,7 @@ const Verify = () => {
     };
 
     confirmUser();
-  }, [navigate]);
+  }, [navigate("/welcome")]);
 
   return <p className="text-center mt-10">Bitte warten... E-Mail wird bestätigt...</p>;
 };

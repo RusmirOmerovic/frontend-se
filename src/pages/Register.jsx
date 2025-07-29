@@ -21,11 +21,23 @@ const Register = () => {
     e.preventDefault();
     setError(null);
 
+    sessionStorage.setItem("vorname", form.vorname);
+    sessionStorage.setItem("nachname", form.nachname);
+    sessionStorage.setItem("geburtsdatum", form.geburtsdatum);
+    sessionStorage.setItem("matrikelnummer", form.matrikelnummer);
+    sessionStorage.setItem("email", form.email);
+
     const { data, error } = await supabase.auth.signUp({
       email: form.email,
       password: form.password,
       options: {
         emailRedirectTo: "https://frontend-se-cyan.vercel.app/verify", // URL für die E-Mail-Bestätigung
+        data: {
+          vorname: form.vorname,
+          nachname: form.nachname,
+          geburtsdatum: form.geburtsdatum,
+          matrikelnummer: form.matrikelnummer,
+        },
       },
     });
 
