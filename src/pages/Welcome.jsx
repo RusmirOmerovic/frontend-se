@@ -11,7 +11,7 @@ const Welcome = () => {
       if (user) {
         const { data, error } = await supabase
           .from("user_profiles")
-          .select("Vorname, Nachname")
+          .select("vorname, nachname")
           .eq("id", user.id)
           .single();
 
@@ -30,7 +30,7 @@ const Welcome = () => {
         {profile ? (
           <>
             <h1 className="text-3xl font-bold mb-4">
-              Willkommen, {profile.Vorname} {profile.Nachname}!
+              Willkommen, {profile.vorname} {profile.nachname}!
             </h1>
             <p className="text-lg">
               Du hast dich erfolgreich registriert. Viel Spaß mit der Plattform für Software Engineering!

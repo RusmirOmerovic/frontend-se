@@ -46,21 +46,16 @@ const Register = () => {
     } else {
       const userId = data?.user?.id;
 
-      // if (userId) {
-      //   await supabase.from("user_profiles").insert([
-      //     {
-      //       id: userId,
-      //       Vorname: form.vorname,
-      //       Nachname: form.nachname,
-      //       geburtsdatum: form.geburtsdatum,
-      //       matrikelnummer: form.matrikelnummer,
-      //     },
-      //   ]);
-      // }
-
       alert("Registrierung erfolgreich. Bitte bestätige deine E-Mail.");
-      window.location.href = "/login";
+      useEffect(() => {
+        if (shouldNavigate) {
+          navigate("/welcome");
+        }
+      }, [shouldNavigate]);
+
     }
+
+    console.log(data);
 
     // Falls erfolgreich, ergänze user_profiles manuell
     if (data?.user) {
@@ -71,11 +66,11 @@ const Register = () => {
         .insert([
           {
             id, // <- identisch mit Supabase User UUID
-            vorname,
-            nachname,
-            geburtsdatum,
-            matrikelnummer,
-            email,
+            vorname: form.vorname,
+            nachname: form.nachname,
+            geburtsdatum: form.geburtsdatum,
+            matrikelnummer: form.matrikelnummer,
+            email: form.email,
           },
         ]);
 
