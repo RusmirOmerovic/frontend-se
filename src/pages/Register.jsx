@@ -61,6 +61,29 @@ const Register = () => {
       alert("Registrierung erfolgreich. Bitte bestätige deine E-Mail.");
       window.location.href = "/login";
     }
+
+    // Falls erfolgreich, ergänze user_profiles manuell
+    if (data?.user) {
+      const { id } = data.user;
+
+      const { error: insertError } = await supabase
+        .from("user_profiles")
+        .insert([
+          {
+            id, // <- identisch mit Supabase User UUID
+            vorname,
+            nachname,
+            geburtsdatum,
+            matrikelnummer,
+            email,
+          },
+        ]);
+
+      if (insertError) {
+        console.error("Fehler beim Einfügen in user_profiles:", insertError.message);
+      }
+    }
+
   };
 
   return (

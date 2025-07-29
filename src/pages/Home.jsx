@@ -5,7 +5,7 @@ const Home = () => (
     <p className="mt-2">
       Dies ist die Startseite der Software-Engineering Plattform für Tutoren und Studenten. Du kannst dich einloggen oder registrieren.
     </p>
-    <img src="public/myAppPic.jpg" alt="Illustration" className="mt-4 rounded shadow-lg" />
+    <img src="/myAppPic.jpg" alt="Logo" className="mt-4 rounded shadow-lg" />
     
   </div>
 );
