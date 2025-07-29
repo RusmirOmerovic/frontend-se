@@ -1,8 +1,9 @@
-import { useState } from "react";
-import { supabase } from "../supabaseClient";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "../supabaseClient";
 
 const Register = () => {
+  const navigate = useNavigate(); // ✅ an den Anfang
   const [form, setForm] = useState({
     email: "",
     password: "",
@@ -13,7 +14,7 @@ const Register = () => {
   });
 
   const [error, setError] = useState(null);
-  const navigate = useNavigate(); // ✅ Richtig positioniert!
+  const [success, setSuccess] = useState(false); // ⬅️ damit triggerst du später navigation
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -23,14 +24,6 @@ const Register = () => {
     e.preventDefault();
     setError(null);
 
-    // Optional: Backup im sessionStorage
-    sessionStorage.setItem("vorname", form.vorname);
-    sessionStorage.setItem("nachname", form.nachname);
-    sessionStorage.setItem("geburtsdatum", form.geburtsdatum);
-    sessionStorage.setItem("matrikelnummer", form.matrikelnummer);
-    sessionStorage.setItem("email", form.email);
-
-    // Supabase Signup
     const { data, error } = await supabase.auth.signUp({
       email: form.email,
       password: form.password,
@@ -50,61 +43,50 @@ const Register = () => {
       return;
     }
 
-    // Insert Profil in user_profiles
-    if (data?.user) {
-      const { id } = data.user;
+    const userId = data?.user?.id;
 
-      const { error: insertError } = await supabase
-        .from("user_profiles")
-        .insert([
-          {
-            id,
-            vorname: form.vorname,
-            nachname: form.nachname,
-            geburtsdatum: form.geburtsdatum,
-            matrikelnummer: form.matrikelnummer,
-            email: form.email,
-          },
-        ]);
+    const { error: insertError } = await supabase
+      .from("user_profiles")
+      .insert([
+        {
+          id: userId,
+          vorname: form.vorname,
+          nachname: form.nachname,
+          geburtsdatum: form.geburtsdatum,
+          matrikelnummer: form.matrikelnummer,
+          email: form.email,
+        },
+      ]);
 
-      if (insertError) {
-        console.error("Fehler beim Einfügen in user_profiles:", insertError.message);
-      }
+    if (insertError) {
+      setError(insertError.message);
+      return;
     }
 
-    // Weiterleitung
     alert("Registrierung erfolgreich. Bitte bestätige deine E-Mail.");
-    navigate("/welcome");
+    setSuccess(true); // ⬅️ löst navigate im useEffect aus
   };
 
+  // 🧭 Navigation nach erfolgreicher Registrierung
+  useEffect(() => {
+    if (success) {
+      navigate("/welcome");
+    }
+  }, [success, navigate]);
+
+  // JSX bleibt wie bei dir
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white p-8 rounded shadow w-full max-w-lg"
-      >
+      <form onSubmit={handleSubmit} className="bg-white p-8 rounded shadow w-full max-w-lg">
         <h2 className="text-2xl font-bold mb-4">Registrieren mit Profil</h2>
 
         {error && <p className="text-red-500 mb-3">{error}</p>}
 
-        {[
-          "vorname",
-          "nachname",
-          "geburtsdatum",
-          "matrikelnummer",
-          "email",
-          "password",
-        ].map((field) => (
+        {["vorname", "nachname", "geburtsdatum", "matrikelnummer", "email", "password"].map((field) => (
           <input
             key={field}
             name={field}
-            type={
-              field === "password"
-                ? "password"
-                : field === "geburtsdatum"
-                ? "date"
-                : "text"
-            }
+            type={field === "password" ? "password" : field === "geburtsdatum" ? "date" : "text"}
             placeholder={
               field.charAt(0).toUpperCase() +
               field
@@ -119,10 +101,7 @@ const Register = () => {
           />
         ))}
 
-        <button
-          type="submit"
-          className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded"
-        >
+        <button type="submit" className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded">
           Registrieren
         </button>
       </form>
