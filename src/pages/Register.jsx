@@ -38,42 +38,24 @@ const Register = () => {
       },
     });
 
+    // useEffect(() => {
+        // if (success) {
+        //   navigate("/welcome");
+        // }
+        //}, [success, navigate]);
+
+
     if (error) {
       setError(error.message);
       return;
     }
 
-    const userId = data?.user?.id;
-
-    const { error: insertError } = await supabase
-      .from("user_profiles")
-      .insert([
-        {
-          id: userId,
-          vorname: form.vorname,
-          nachname: form.nachname,
-          geburtsdatum: form.geburtsdatum,
-          matrikelnummer: form.matrikelnummer,
-          email: form.email,
-        },
-      ]);
-
-    if (insertError) {
-      setError(insertError.message);
-      return;
-    }
-
     alert("Registrierung erfolgreich. Bitte bestätige deine E-Mail.");
-    setSuccess(true); // ⬅️ löst navigate im useEffect aus
+    setSuccess(true); // für redirect
+
   };
 
-  // 🧭 Navigation nach erfolgreicher Registrierung
-  useEffect(() => {
-    if (success) {
-      navigate("/welcome");
-    }
-  }, [success, navigate]);
-
+  
   // JSX bleibt wie bei dir
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
