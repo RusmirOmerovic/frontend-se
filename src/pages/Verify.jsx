@@ -21,11 +21,32 @@ const Verify = () => {
         });
 
         if (!error) {
-          alert("Deine E-Mail wurde bestätigt! Du kannst dich jetzt einloggen.");
+          const { data: { user } } = await supabase.auth.getUser(); // aktueller User
+
+          const vorname = sessionStorage.getItem("vorname");
+          const nachname = sessionStorage.getItem("nachname");
+          const geburtsdatum = sessionStorage.getItem("geburtsdatum");
+          const matrikelnummer = sessionStorage.getItem("matrikelnummer");
+
+          if (user && user.id) {
+            await supabase.from("user_profiles").update({
+              vorname,
+              nachname,
+              geburtsdatum,
+              matrikelnummer,
+            }).eq("id", user.id);
+          }
+
+          // optional: sessionStorage löschen
+          sessionStorage.clear();
+
+          alert("Deine E-Mail wurde bestätigt. Du kannst dich jetzt einloggen.");
           navigate("/login");
         } else {
           alert("Bestätigung fehlgeschlagen: " + error.message);
         }
+
+
       }
     };
 
