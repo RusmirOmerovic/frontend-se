@@ -47,11 +47,7 @@ const Register = () => {
       const userId = data?.user?.id;
 
       alert("Registrierung erfolgreich. Bitte bestätige deine E-Mail.");
-      useEffect(() => {
-        if (shouldNavigate) {
-          navigate("/welcome");
-        }
-      }, [shouldNavigate]);
+      navigate("/welcome");
 
     }
 
