@@ -7,18 +7,18 @@ const Verify = () => {
 
   useEffect(() => {
     const confirmUser = async () => {
-      // 1. Token aus der URL lesen (nur aus dem Hash!)
-      const token = new URLSearchParams(window.location.hash.slice(1)).get("confirmation_token");
+      const hashToken = new URLSearchParams(window.location.hash.slice(1)).get("confirmation_token");
+      const queryToken = new URLSearchParams(window.location.search).get("confirmation_token");
+      const token = hashToken || queryToken;
 
       if (!token) {
         alert("Kein Token gefunden.");
         return;
       }
 
-      // 2. Token bei Supabase verifizieren
       const { error: otpError } = await supabase.auth.verifyOtp({
         token,
-        type: "email",
+        type: "signup", // WICHTIG
       });
 
       if (otpError) {
@@ -26,28 +26,24 @@ const Verify = () => {
         return;
       }
 
-      // 3. Aktuelle Session abrufen
       const { data: sessionData } = await supabase.auth.getSession();
-      const session = sessionData?.session;
-      const user = session?.user;
+      const user = sessionData?.session?.user;
 
       if (!user) {
         alert("Benutzer konnte nach Verifizierung nicht geladen werden.");
         return;
       }
 
-      const { id, email, user_metadata } = user;
-      const { vorname, nachname, geburtsdatum, matrikelnummer } = user_metadata;
+      const { vorname, nachname, geburtsdatum, matrikelnummer } = user.user_metadata;
 
-      // 4. Profil in DB einfügen
       const { error: insertError } = await supabase.from("user_profiles").insert([
         {
-          id,
-          email,
-          vorname,
-          nachname,
-          geburtsdatum,
-          matrikelnummer,
+          id: user.id,
+          vorname: user.vorname,
+          nachname: user.nachname,
+          geburtsdatum: user.geburtsdatum,
+          matrikelnummer: user.matrikelnummer,
+          email: user.email,
         },
       ]);
 
@@ -56,16 +52,16 @@ const Verify = () => {
         return;
       }
 
-      // 5. sessionStorage löschen & Weiterleitung
       sessionStorage.clear();
-      alert("Deine E-Mail wurde bestätigt. Du kannst dich jetzt einloggen.");
-      navigate("/login");
+
+      alert("E-Mail bestätigt! Du wirst weitergeleitet...");
+      navigate("/welcome"); // ✅
     };
 
     confirmUser();
-  }, [navigate]); // ❗ ACHTUNG: hier `navigate` selbst, NICHT `navigate("/welcome")`
+  }, []); // ✅ KEINE navigate() Funktion in den dependencies
 
-  return null; // Kein sichtbares Element
+  return null;
 };
 
 export default Verify;
