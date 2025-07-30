@@ -44,7 +44,7 @@ const Register = () => {
     if (data) {
     alert("Registrierung erfolgreich. Bitte bestätige deine E-Mail.");
     setError(null); 
-    navigate("/verify");
+    navigate("/");
     }
   };
 

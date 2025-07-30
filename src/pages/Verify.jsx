@@ -14,15 +14,19 @@ const Verify = () => {
       //   return;
       // }
 
-      const { error: verifyError } = await supabase.auth.verifyOtp({
+      const { data, error } = await supabase.auth.verifyOtp({
         token,
         type: "signup", // ← wichtig: kein "email", sondern "signup"
       });
 
-      if (verifyError) {
-        alert("Verifizierung fehlgeschlagen: " + verifyError.message);
+      if (error) {
+        alert("Verifizierung fehlgeschlagen: " + error.message);
         return;
       }
+      if (data) {
+        alert("E-Mail erfolgreich verifiziert!");
+      }
+
 
       const { data: { user }, error: userError } = await supabase.auth.getUser();
 
@@ -31,16 +35,16 @@ const Verify = () => {
         return;
       }
 
-      const { vorname, nachname, geburtsdatum, matrikelnummer } = user.user_metadata;
+      //const { vorname, nachname, geburtsdatum, matrikelnummer } = user.user_metadata;
 
       const { error: insertError } = await supabase.from("user_profiles").insert([
         {
           id: user.id,
           email: user.email,
-          vorname,
-          nachname,
-          geburtsdatum,
-          matrikelnummer,
+          vorname: user.vorname,
+          nachname: user.nachname,
+          geburtsdatum: user.geburtsdatum,
+          matrikelnummer: user.matrikelnummer,
         },
       ]);
 
