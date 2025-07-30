@@ -52,7 +52,7 @@ const Register = () => {
     }
 
     alert("Registrierung erfolgreich. Bitte bestätige deine E-Mail.");
-    setSuccess(true); // für redirect
+    navigate("/verify"); // für redirect
 
   };
 
