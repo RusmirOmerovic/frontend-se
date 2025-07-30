@@ -23,19 +23,17 @@ const Register = () => {
     e.preventDefault();
     setError(null);
 
-    const { error } = await supabase.auth.signUp({
-      email: form.email,
-      password: form.password,
-      options: {
-        emailRedirectTo: "https://frontend-se-cyan.vercel.app/verify",
-        data: {
+    const { error } = await supabase.auth.signUp
+      .from('user_profiles')
+      .insert([
+        {id: UserActivation.id,
           vorname: form.vorname,
           nachname: form.nachname,
           geburtsdatum: form.geburtsdatum,
           matrikelnummer: form.matrikelnummer,
-        },
-      },
-    });
+          email: form.email },
+      ])
+      .select()
 
     if (error) {
       setError(error.message);
