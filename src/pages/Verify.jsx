@@ -9,10 +9,10 @@ const Verify = () => {
     const confirmUser = async () => {
       const token = new URLSearchParams(window.location.hash.slice(1)).get("confirmation_token");
 
-      if (!token) {
-        alert("Kein Token gefunden.");
-        return;
-      }
+      // if (!token) {
+      //   alert("Kein Token gefunden.");
+      //   return;
+      // }
 
       const { error: verifyError } = await supabase.auth.verifyOtp({
         token,
@@ -47,11 +47,13 @@ const Verify = () => {
       if (insertError) {
         alert("Profil konnte nicht gespeichert werden: " + insertError.message);
         return;
+      } else {
+        sessionStorage.clear();
+        alert("E-Mail bestätigt! Du wirst weitergeleitet...");
+        navigate("/welcome");
       }
 
-      sessionStorage.clear();
-      alert("E-Mail bestätigt! Du wirst weitergeleitet...");
-      navigate("/welcome");
+      
     };
 
     confirmUser();

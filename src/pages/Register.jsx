@@ -23,7 +23,7 @@ const Register = () => {
     e.preventDefault();
     setError(null);
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email: form.email,
       password: form.password,
       options: {
@@ -41,9 +41,11 @@ const Register = () => {
       setError(error.message);
       return;
     }
-
+    if (data) {
     alert("Registrierung erfolgreich. Bitte bestätige deine E-Mail.");
+    setError(null); 
     navigate("/verify");
+    }
   };
 
   return (
