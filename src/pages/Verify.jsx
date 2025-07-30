@@ -7,60 +7,58 @@ const Verify = () => {
 
   useEffect(() => {
     const confirmUser = async () => {
-      const hashParams = new URLSearchParams(window.location.hash.slice(1));
-      const access_token = hashParams.get("access_token");
+      const tokenFromHash = new URLSearchParams(window.location.hash.slice(1)).get("confirmation_token");
+      const tokenFromQuery = new URLSearchParams(window.location.search).get("confirmation_token");
+      const token = tokenFromQuery || tokenFromHash;
 
-      if (!access_token) {
+      if (!token) {
         alert("Kein Token gefunden.");
         return;
       }
 
-      const { error: sessionError } = await supabase.auth.setSession({
-        access_token,
-        refresh_token: hashParams.get("refresh_token"),
+      // Email-Verifizierung durchführen
+      const { data: verifyData, error: otpError } = await supabase.auth.verifyOtp({
+        token,
+        type: "signup",
       });
 
-      if (sessionError) {
-        alert("Session konnte nicht gesetzt werden: " + sessionError.message);
+      if (otpError) {
+        alert("Verifizierung fehlgeschlagen: " + otpError.message);
         return;
       }
 
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
+      const user = verifyData?.user;
 
-
-      if (userError || !user) {
-        alert("Benutzerdaten konnten nicht geladen werden.");
+      if (!user) {
+        alert("Kein Benutzer nach Verifizierung verfügbar.");
         return;
       }
 
-      //const { vorname, nachname, geburtsdatum, matrikelnummer } = user.user_metadata;
+      const { vorname, nachname, geburtsdatum, matrikelnummer } = user.user_metadata;
 
       const { error: insertError } = await supabase.from("user_profiles").insert([
         {
           id: user.id,
-          vorname: user.vorname,
-          nachname: user.nachname,
-          geburtsdatum: user.geburtsdatum,
-          matrikelnummer: user.matrikelnummer,
+          vorname,
+          nachname,
+          geburtsdatum,
+          matrikelnummer,
           email: user.email,
         },
       ]);
 
       if (insertError) {
-       alert("Profil konnte nicht gespeichert werden.");
+        alert("Fehler beim Speichern des Profils: " + insertError.message);
         return;
       }
 
       sessionStorage.clear();
       alert("E-Mail bestätigt! Du wirst weitergeleitet...");
-      navigate("/welcome"); // ✅
+      navigate("/welcome");
     };
 
     confirmUser();
-  }, [navigate]); // ✅ KEINE navigate() Funktion in den dependencies
+  }, [navigate]);
 
   return null;
 };

@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 
 const Register = () => {
-  const navigate = useNavigate(); // ✅ an den Anfang
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     email: "",
     password: "",
@@ -14,7 +14,6 @@ const Register = () => {
   });
 
   const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(false); // ⬅️ damit triggerst du später navigation
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -24,7 +23,7 @@ const Register = () => {
     e.preventDefault();
     setError(null);
 
-    const { data, error } = await supabase.auth.signUp({
+    const { error } = await supabase.auth.signUp({
       email: form.email,
       password: form.password,
       options: {
@@ -38,26 +37,15 @@ const Register = () => {
       },
     });
 
-    useEffect(() => {
-        if (success) {
-          navigate("/home"); // Redirect nach erfolgreicher Registrierung
-          return;
-        }
-    }, [success, navigate]);
-
-
     if (error) {
       setError(error.message);
       return;
     }
 
     alert("Registrierung erfolgreich. Bitte bestätige deine E-Mail.");
-    navigate("/verify"); // für redirect
-
+    navigate("/home");
   };
 
-  
-  // JSX bleibt wie bei dir
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
       <form onSubmit={handleSubmit} className="bg-white p-8 rounded shadow w-full max-w-lg">
