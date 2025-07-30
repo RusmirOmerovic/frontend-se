@@ -7,30 +7,27 @@ const Verify = () => {
 
   useEffect(() => {
     const confirmUser = async () => {
-      const tokenFromHash = new URLSearchParams(window.location.hash.slice(1)).get("confirmation_token");
-      const tokenFromQuery = new URLSearchParams(window.location.search).get("confirmation_token");
-      const token = tokenFromQuery || tokenFromHash;
+      const token = new URLSearchParams(window.location.hash.slice(1)).get("confirmation_token");
 
       if (!token) {
         alert("Kein Token gefunden.");
         return;
       }
 
-      // Email-Verifizierung durchführen
-      const { data: verifyData, error: otpError } = await supabase.auth.verifyOtp({
+      const { error: verifyError } = await supabase.auth.verifyOtp({
         token,
-        type: "signup",
+        type: "signup", // ← wichtig: kein "email", sondern "signup"
       });
 
-      if (otpError) {
-        alert("Verifizierung fehlgeschlagen: " + otpError.message);
+      if (verifyError) {
+        alert("Verifizierung fehlgeschlagen: " + verifyError.message);
         return;
       }
 
-      const user = verifyData?.user;
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
 
-      if (!user) {
-        alert("Kein Benutzer nach Verifizierung verfügbar.");
+      if (userError || !user) {
+        alert("Benutzerdaten konnten nicht geladen werden.");
         return;
       }
 
@@ -39,16 +36,16 @@ const Verify = () => {
       const { error: insertError } = await supabase.from("user_profiles").insert([
         {
           id: user.id,
+          email: user.email,
           vorname,
           nachname,
           geburtsdatum,
           matrikelnummer,
-          email: user.email,
         },
       ]);
 
       if (insertError) {
-        alert("Fehler beim Speichern des Profils: " + insertError.message);
+        alert("Profil konnte nicht gespeichert werden: " + insertError.message);
         return;
       }
 

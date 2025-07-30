@@ -23,17 +23,19 @@ const Register = () => {
     e.preventDefault();
     setError(null);
 
-    const { error } = await supabase.auth.signUp
-      .from('user_profiles')
-      .insert([
-        {id: UserActivation.id,
+    const { error } = await supabase.auth.signUp({
+      email: form.email,
+      password: form.password,
+      options: {
+        data: {
           vorname: form.vorname,
           nachname: form.nachname,
           geburtsdatum: form.geburtsdatum,
           matrikelnummer: form.matrikelnummer,
-          email: form.email },
-      ])
-      .select()
+        },
+        emailRedirectTo: "https://frontend-se-cyan.vercel.app/verify", // ← muss exakt zu deinem Projekt passen!
+      },
+    });
 
     if (error) {
       setError(error.message);
@@ -48,7 +50,6 @@ const Register = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
       <form onSubmit={handleSubmit} className="bg-white p-8 rounded shadow w-full max-w-lg">
         <h2 className="text-2xl font-bold mb-4">Registrieren mit Profil</h2>
-
         {error && <p className="text-red-500 mb-3">{error}</p>}
 
         {["vorname", "nachname", "geburtsdatum", "matrikelnummer", "email", "password"].map((field) => (
