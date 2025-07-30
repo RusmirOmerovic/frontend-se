@@ -7,34 +7,36 @@ const Verify = () => {
 
   useEffect(() => {
     const confirmUser = async () => {
-      const hashToken = new URLSearchParams(window.location.hash.slice(1)).get("confirmation_token");
-      const queryToken = new URLSearchParams(window.location.search).get("confirmation_token");
-      const token = hashToken || queryToken;
+      const hashParams = new URLSearchParams(window.location.hash.slice(1));
+      const access_token = hashParams.get("access_token");
 
-      if (!token) {
+      if (!access_token) {
         alert("Kein Token gefunden.");
         return;
       }
 
-      const { error: otpError } = await supabase.auth.verifyOtp({
-        token,
-        type: "signup", // WICHTIG
+      const { error: sessionError } = await supabase.auth.setSession({
+        access_token,
+        refresh_token: hashParams.get("refresh_token"),
       });
 
-      if (otpError) {
-        alert("Bestätigung fehlgeschlagen: " + otpError.message);
+      if (sessionError) {
+        alert("Session konnte nicht gesetzt werden: " + sessionError.message);
         return;
       }
 
-      const { data: sessionData } = await supabase.auth.getSession();
-      const user = sessionData?.session?.user;
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
 
-      if (!user) {
-        alert("Benutzer konnte nach Verifizierung nicht geladen werden.");
+
+      if (userError || !user) {
+        alert("Benutzerdaten konnten nicht geladen werden.");
         return;
       }
 
-      const { vorname, nachname, geburtsdatum, matrikelnummer } = user.user_metadata;
+      //const { vorname, nachname, geburtsdatum, matrikelnummer } = user.user_metadata;
 
       const { error: insertError } = await supabase.from("user_profiles").insert([
         {
@@ -48,18 +50,17 @@ const Verify = () => {
       ]);
 
       if (insertError) {
-        alert("Profil konnte nicht gespeichert werden: " + insertError.message);
+       alert("Profil konnte nicht gespeichert werden.");
         return;
       }
 
       sessionStorage.clear();
-
       alert("E-Mail bestätigt! Du wirst weitergeleitet...");
       navigate("/welcome"); // ✅
     };
 
     confirmUser();
-  }, []); // ✅ KEINE navigate() Funktion in den dependencies
+  }, [navigate]); // ✅ KEINE navigate() Funktion in den dependencies
 
   return null;
 };
