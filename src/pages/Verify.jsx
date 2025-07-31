@@ -1,151 +1,135 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 
 const Verify = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const [status, setStatus] = useState("verifying");
   const [message, setMessage] = useState("E-Mail wird bestätigt...");
-  const [debugInfo, setDebugInfo] = useState({});
 
   useEffect(() => {
     const confirmUser = async () => {
       try {
-        // DEBUGGING: Alle URL-Informationen sammeln
-        const currentUrl = window.location.href;
-        const searchParamsAll = Object.fromEntries(searchParams.entries());
-        const hashParams = new URLSearchParams(window.location.hash.slice(1));
-        const hashParamsAll = Object.fromEntries(hashParams.entries());
-        
-        const debug = {
-          fullUrl: currentUrl,
-          pathname: window.location.pathname,
-          search: window.location.search,
-          hash: window.location.hash,
-          searchParams: searchParamsAll,
-          hashParams: hashParamsAll
-        };
-        
-        setDebugInfo(debug);
-        console.log("=== DEBUGGING URL INFORMATION ===");
-        console.log("Full URL:", currentUrl);
-        console.log("Search params:", searchParamsAll);
-        console.log("Hash params:", hashParamsAll);
-        console.log("Raw hash:", window.location.hash);
-        console.log("Raw search:", window.location.search);
+        console.log("=== VERIFICATION START ===");
+        console.log("Current URL:", window.location.href);
+        console.log("Hash:", window.location.hash);
+        console.log("Search:", window.location.search);
 
-        // 1. Token aus verschiedenen Quellen versuchen zu extrahieren
+        // 1. Token aus URL extrahieren (verschiedene Methoden)
         let token = null;
         let tokenSource = null;
 
-        // Methode 1: Query-Parameter (moderne Supabase)
-        const possibleTokenNames = ['token', 'confirmation_token', 'access_token', 'refresh_token'];
+        // Methode A: URL Search Params (moderne Supabase)
+        const urlParams = new URLSearchParams(window.location.search);
+        const possibleTokenNames = ['token', 'confirmation_token', 'access_token'];
         
         for (const tokenName of possibleTokenNames) {
-          const queryToken = searchParams.get(tokenName);
-          if (queryToken) {
-            token = queryToken;
-            tokenSource = `query-${tokenName}`;
+          const foundToken = urlParams.get(tokenName);
+          if (foundToken) {
+            token = foundToken;
+            tokenSource = `search-${tokenName}`;
             break;
           }
         }
 
-        // Methode 2: Hash-Parameter (legacy Supabase)
-        if (!token) {
+        // Methode B: Hash Params (legacy Supabase)
+        if (!token && window.location.hash) {
+          const hashParams = new URLSearchParams(window.location.hash.slice(1));
           for (const tokenName of possibleTokenNames) {
-            const hashToken = hashParams.get(tokenName);
-            if (hashToken) {
-              token = hashToken;
+            const foundToken = hashParams.get(tokenName);
+            if (foundToken) {
+              token = foundToken;
               tokenSource = `hash-${tokenName}`;
               break;
             }
           }
         }
 
-        // Methode 3: Direkter Hash-Wert (sehr legacy)
-        if (!token && window.location.hash) {
-          const hashValue = window.location.hash.slice(1);
-          if (hashValue && hashValue.length > 20) { // Token sind normalerweise länger
-            token = hashValue;
-            tokenSource = 'direct-hash';
-          }
+        // Methode C: Direkter Hash (falls nötig)
+        if (!token && window.location.hash && window.location.hash.length > 20) {
+          token = window.location.hash.slice(1);
+          tokenSource = 'direct-hash';
         }
 
-        console.log("Found token:", token);
+        console.log("Found token:", token ? "YES" : "NO");
         console.log("Token source:", tokenSource);
 
         if (!token) {
-          setStatus("debug");
-          throw new Error(`Kein Token gefunden. Debug-Info verfügbar.`);
+          // Fallback: Prüfen ob User bereits eingeloggt ist
+          const { data: sessionData } = await supabase.auth.getSession();
+          if (sessionData.session?.user) {
+            console.log("User already has session, proceeding...");
+            token = "session-exists";
+            tokenSource = "existing-session";
+          } else {
+            throw new Error("Kein Bestätigungstoken gefunden. Bitte verwende den Link aus deiner E-Mail.");
+          }
         }
 
-        // 2. Verschiedene Verifizierungsmethoden versuchen
-        let verifyData = null;
-        let verifyError = null;
-
-        // Methode A: verifyOtp mit token_hash
-        try {
-          console.log("Trying verifyOtp with token_hash...");
-          const result = await supabase.auth.verifyOtp({
-            token_hash: token,
-            type: "signup"
-          });
-          verifyData = result.data;
-          verifyError = result.error;
-          console.log("verifyOtp token_hash result:", { data: verifyData, error: verifyError });
-        } catch (err) {
-          console.log("verifyOtp token_hash failed:", err);
-        }
-
-        // Methode B: verifyOtp mit token (falls token_hash fehlschlägt)
-        if (verifyError || !verifyData?.user) {
+        // 2. Email-Bestätigung durchführen (nur wenn Token vorhanden)
+        let user = null;
+        
+        if (tokenSource !== "existing-session") {
+          // Verschiedene Verify-Methoden versuchen
+          let verifySuccess = false;
+          
+          // Versuch 1: verifyOtp mit token_hash
           try {
-            console.log("Trying verifyOtp with token...");
-            const result = await supabase.auth.verifyOtp({
-              token: token,
+            console.log("Trying verifyOtp with token_hash...");
+            const { data, error } = await supabase.auth.verifyOtp({
+              token_hash: token,
               type: "signup"
             });
-            verifyData = result.data;
-            verifyError = result.error;
-            console.log("verifyOtp token result:", { data: verifyData, error: verifyError });
-          } catch (err) {
-            console.log("verifyOtp token failed:", err);
-          }
-        }
-
-        // Methode C: getSession (falls Token bereits in Session ist)
-        if (verifyError || !verifyData?.user) {
-          try {
-            console.log("Trying getSession...");
-            const result = await supabase.auth.getSession();
-            if (result.data.session?.user) {
-              verifyData = { user: result.data.session.user, session: result.data.session };
-              verifyError = null;
-              console.log("getSession result:", verifyData);
+            
+            if (!error && data.user) {
+              user = data.user;
+              verifySuccess = true;
+              console.log("verifyOtp token_hash successful");
+            } else {
+              console.log("verifyOtp token_hash failed:", error?.message);
             }
           } catch (err) {
-            console.log("getSession failed:", err);
+            console.log("verifyOtp token_hash error:", err);
           }
+
+          // Versuch 2: verifyOtp mit token (falls erste Methode fehlschlägt)
+          if (!verifySuccess) {
+            try {
+              console.log("Trying verifyOtp with token...");
+              const { data, error } = await supabase.auth.verifyOtp({
+                token: token,
+                type: "signup"
+              });
+              
+              if (!error && data.user) {
+                user = data.user;
+                verifySuccess = true;
+                console.log("verifyOtp token successful");
+              } else {
+                console.log("verifyOtp token failed:", error?.message);
+              }
+            } catch (err) {
+              console.log("verifyOtp token error:", err);
+            }
+          }
+
+          if (!verifySuccess) {
+            throw new Error("E-Mail-Bestätigung fehlgeschlagen. Token ungültig oder abgelaufen.");
+          }
+        } else {
+          // User bereits eingeloggt
+          const { data: userData } = await supabase.auth.getUser();
+          user = userData.user;
         }
 
-        if (verifyError) {
-          console.error("Verify error:", verifyError);
-          throw new Error(`Verifizierung fehlgeschlagen: ${verifyError.message}`);
+        if (!user) {
+          throw new Error("Benutzerdaten konnten nicht abgerufen werden.");
         }
 
-        if (!verifyData?.user) {
-          throw new Error("Keine Benutzerdaten nach Verifizierung erhalten.");
-        }
-
-        console.log("Verification successful:", verifyData);
-
-        // 3. User-Daten verarbeiten
-        const user = verifyData.user;
-        console.log("User object:", user);
+        console.log("User verified:", user.id);
         console.log("User metadata:", user.user_metadata);
 
-        // 4. Registrierungsdaten zusammenstellen
+        // 3. Registrierungsdaten sammeln
         const metadata = user.user_metadata || {};
         let userData = {
           vorname: metadata.vorname,
@@ -154,22 +138,25 @@ const Verify = () => {
           matrikelnummer: metadata.matrikelnummer
         };
 
-        // Fallback: localStorage
+        // Fallback: localStorage (falls metadata leer)
         const pendingDataString = localStorage.getItem('pendingUserData');
         if (pendingDataString && (!userData.vorname || !userData.nachname)) {
           const pendingData = JSON.parse(pendingDataString);
           userData = { ...userData, ...pendingData };
-          console.log("Using localStorage fallback:", userData);
+          console.log("Using localStorage fallback data");
         }
 
         console.log("Final user data:", userData);
 
-        // 5. Validierung
-        if (!userData.vorname || !userData.nachname || !userData.geburtsdatum || !userData.matrikelnummer) {
-          throw new Error(`Unvollständige Daten: ${JSON.stringify(userData)}`);
+        // 4. Datenvalidierung
+        const requiredFields = ['vorname', 'nachname', 'geburtsdatum', 'matrikelnummer'];
+        const missingFields = requiredFields.filter(field => !userData[field]);
+        
+        if (missingFields.length > 0) {
+          throw new Error(`Fehlende Registrierungsdaten: ${missingFields.join(', ')}. Bitte registriere dich erneut.`);
         }
 
-        // 6. Profil erstellen
+        // 5. Profil in Datenbank erstellen (ohne updated_at)
         const profileData = {
           id: user.id,
           email: user.email,
@@ -177,72 +164,48 @@ const Verify = () => {
           nachname: userData.nachname,
           geburtsdatum: userData.geburtsdatum,
           matrikelnummer: userData.matrikelnummer,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          created_at: new Date().toISOString()
+          // updated_at entfernt - Spalte existiert nicht
         };
 
-        console.log("Inserting profile:", profileData);
+        console.log("Inserting profile data:", profileData);
 
-        const { data: insertData, error: insertError } = await supabase
+        const { data: insertResult, error: insertError } = await supabase
           .from("user_profiles")
           .insert([profileData])
           .select();
 
         if (insertError) {
-          console.error("Insert error:", insertError);
+          console.error("Profile insert error:", insertError);
           throw new Error(`Profil-Erstellung fehlgeschlagen: ${insertError.message}`);
         }
 
-        console.log("Profile created:", insertData);
+        console.log("Profile created successfully:", insertResult);
 
-        // 7. Success
+        // 6. Erfolg!
         localStorage.removeItem('pendingUserData');
         setStatus("success");
-        setMessage("E-Mail erfolgreich bestätigt! Du wirst weitergeleitet...");
+        setMessage("E-Mail erfolgreich bestätigt! Profil wurde erstellt. Du wirst weitergeleitet...");
 
         setTimeout(() => {
           navigate("/welcome");
         }, 3000);
 
       } catch (error) {
-        console.error("=== CONFIRMATION ERROR ===");
-        console.error("Error:", error);
-        console.error("Debug info:", debugInfo);
+        console.error("=== VERIFICATION ERROR ===");
+        console.error("Error message:", error.message);
+        console.error("Full error:", error);
         
         setStatus("error");
-        setMessage(error.message || "Ein Fehler ist aufgetreten.");
+        setMessage(error.message || "Ein unerwarteter Fehler ist aufgetreten.");
+        
         localStorage.removeItem('pendingUserData');
       }
     };
 
     confirmUser();
-  }, [navigate, searchParams]);
+  }, [navigate]);
 
-  // Debug-Ansicht
-  if (status === "debug") {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
-        <div className="bg-white p-8 rounded shadow w-full max-w-2xl">
-          <h2 className="text-2xl font-bold mb-4 text-red-600">Debug-Informationen</h2>
-          <div className="bg-gray-100 p-4 rounded mb-4 text-sm">
-            <h3 className="font-bold mb-2">URL-Informationen:</h3>
-            <pre className="whitespace-pre-wrap">{JSON.stringify(debugInfo, null, 2)}</pre>
-          </div>
-          <p className="text-gray-600 mb-4">
-            Bitte kopieren Sie diese Informationen und die URL aus der E-Mail.
-          </p>
-          <button
-            onClick={() => navigate("/register")}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded"
-          >
-            Zurück zur Registrierung
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // Standard UI für andere Status
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
       <div className="bg-white p-8 rounded shadow w-full max-w-md text-center">
