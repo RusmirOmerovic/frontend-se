@@ -7,31 +7,20 @@ const Verify = () => {
 
   useEffect(() => {
     const confirmUser = async () => {
-      const token = new URLSearchParams(window.location.hash.slice(1)).get("confirmation_token");
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
 
-      if (!token) {
-        alert("Kein Token gefunden.");
+      if (sessionError || !session) {
+        alert("Keine gültige Session gefunden.");
         return;
       }
 
-      const { error: verifyError } = await supabase.auth.verifyOtp({
-        token,
-        type: "signup", // ← wichtig: kein "email", sondern "signup"
-      });
+      const user = session.user;
 
-      if (verifyError) {
-        alert("Verifizierung fehlgeschlagen: " + verifyError.message);
-        return;
-      }
-
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-
-      if (userError || !user) {
-        alert("Benutzerdaten konnten nicht geladen werden.");
-        return;
-      }
-
-      const { vorname, nachname, geburtsdatum, matrikelnummer } = user.user_metadata;
+      const { vorname, nachname, geburtsdatum, matrikelnummer } =
+        user.user_metadata || {};
 
       const { error: insertError } = await supabase.from("user_profiles").insert([
         {
