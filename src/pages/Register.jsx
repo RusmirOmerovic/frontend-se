@@ -1,10 +1,8 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "../supabaseClient";
+import { supabase } from "../supabaseClient"; // Stelle sicher, dass dein Supabase Client korrekt exportiert ist
 
-const Register = () => {
-  const navigate = useNavigate();
-  const [form, setForm] = useState({
+export default function RegisterForm() {
+  const [formData, setFormData] = useState({
     email: "",
     password: "",
     vorname: "",
@@ -12,118 +10,122 @@ const Register = () => {
     geburtsdatum: "",
     matrikelnummer: "",
   });
-  const [error, setError] = useState(null);
+
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [successMsg, setSuccessMsg] = useState("");
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
-    setError(null);
     setLoading(true);
+    setError(null);
+    setSuccessMsg("");
 
-    try {
-      // 1. Nutzerdaten temporär speichern für die Verify-Komponente
-      localStorage.setItem('pendingUserData', JSON.stringify({
-        vorname: form.vorname,
-        nachname: form.nachname,
-        geburtsdatum: form.geburtsdatum,
-        matrikelnummer: form.matrikelnummer,
-      }));
+    // 1. Nutzer registrieren
+    const { data: authData, error: signUpError } = await supabase.auth.signUp({
+      email: formData.email,
+      password: formData.password,
+    });
 
-      // 2. User bei Supabase Auth registrieren
-      const { data, error } = await supabase.auth.signUp({
-        email: form.email,
-        password: form.password,
-        options: {
-          data: {
-            vorname: form.vorname,
-            nachname: form.nachname,
-            geburtsdatum: form.geburtsdatum,
-            matrikelnummer: form.matrikelnummer,
-          },
-          emailRedirectTo: `${window.location.origin}/verify`, // Dynamisch basierend auf aktueller Domain
-        },
-      });
-
-      console.log("Supabase signUp data:", data);
-      console.log("Supabase signUp error:", error);
-
-      if (error) {
-        setError(error.message);
-        localStorage.removeItem('pendingUserData'); // Aufräumen bei Fehler
-        return;
-      }
-
-      if (data.user) {
-        alert("Registrierung erfolgreich! Bitte bestätige deine E-Mail über den Link in deinem Postfach.");
-        // Nicht direkt navigieren - User muss erst Email bestätigen
-        setForm({
-          email: "",
-          password: "",
-          vorname: "",
-          nachname: "",
-          geburtsdatum: "",
-          matrikelnummer: "",
-        });
-        navigate("/");
-      }
-    } catch (err) {
-      console.error("Registration error:", err);
-      setError("Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es erneut.");
-      localStorage.removeItem('pendingUserData');
-    } finally {
+    if (signUpError) {
+      setError(signUpError.message);
       setLoading(false);
+      return;
     }
+
+    const userId = authData.user?.id;
+
+    // 2. Profildaten einfügen
+    const { error: insertError } = await supabase.from("user_profiles").insert([
+      {
+        id: userId, // wichtig wegen RLS!
+        vorname: formData.vorname,
+        nachname: formData.nachname,
+        geburtsdatum: formData.geburtsdatum,
+        matrikelnummer: formData.matrikelnummer,
+      },
+    ]);
+
+    if (insertError) {
+      setError(insertError.message);
+    } else {
+      setSuccessMsg("Registrierung erfolgreich! Bitte bestätige deine E-Mail.");
+      setFormData({
+        email: "",
+        password: "",
+        vorname: "",
+        nachname: "",
+        geburtsdatum: "",
+        matrikelnummer: "",
+      });
+    }
+
+    setLoading(false);
   };
-  
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
-      <form onSubmit={handleSubmit} className="bg-white p-8 rounded shadow w-full max-w-lg">
-        <h2 className="text-2xl font-bold mb-4">Registrieren mit Profil</h2>
-        
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            {error}
-          </div>
-        )}
+    <form onSubmit={handleRegister} className="space-y-4 max-w-md mx-auto">
+      <h2 className="text-xl font-bold">Registrierung</h2>
 
-        {["vorname", "nachname", "geburtsdatum", "matrikelnummer", "email", "password"].map((field) => (
-          <input
-            key={field}
-            name={field}
-            type={field === "password" ? "password" : field === "geburtsdatum" ? "date" : "text"}
-            placeholder={
-              field.charAt(0).toUpperCase() +
-              field
-                .slice(1)
-                .replace("geburtsdatum", "Geburtsdatum")
-                .replace("matrikelnummer", "Matrikelnummer")
-            }
-            value={form[field]}
-            onChange={handleChange}
-            required
-            disabled={loading}
-            className="w-full p-2 border mb-3 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
-          />
-        ))}
+      {error && <div className="text-red-600">{error}</div>}
+      {successMsg && <div className="text-green-600">{successMsg}</div>}
 
-        <button 
-          type="submit" 
-          disabled={loading}
-          className="w-full bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white py-2 px-4 rounded transition-colors"
-        >
-          {loading ? "Registriere..." : "Registrieren"}
-        </button>
+      <input
+        type="text"
+        name="vorname"
+        placeholder="Vorname"
+        value={formData.vorname}
+        onChange={handleChange}
+        required
+      />
+      <input
+        type="text"
+        name="nachname"
+        placeholder="Nachname"
+        value={formData.nachname}
+        onChange={handleChange}
+        required
+      />
+      <input
+        type="date"
+        name="geburtsdatum"
+        placeholder="Geburtsdatum"
+        value={formData.geburtsdatum}
+        onChange={handleChange}
+        required
+      />
+      <input
+        type="text"
+        name="matrikelnummer"
+        placeholder="Matrikelnummer"
+        value={formData.matrikelnummer}
+        onChange={handleChange}
+        required
+      />
+      <input
+        type="email"
+        name="email"
+        placeholder="E-Mail"
+        value={formData.email}
+        onChange={handleChange}
+        required
+      />
+      <input
+        type="password"
+        name="password"
+        placeholder="Passwort"
+        value={formData.password}
+        onChange={handleChange}
+        required
+      />
 
-        <p className="mt-4 text-sm text-gray-600 text-center">
-          Nach der Registrierung erhältst du eine E-Mail zur Bestätigung.
-        </p>
-      </form>
-    </div>
+      <button type="submit" disabled={loading}>
+        {loading ? "Registriere..." : "Registrieren"}
+      </button>
+    </form>
   );
-};
-
-export default Register;
+}
