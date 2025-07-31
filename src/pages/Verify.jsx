@@ -11,15 +11,20 @@ const Verify = () => {
       const params = new URLSearchParams(window.location.search);
       const code = params.get("code");
 
-      // Exchange the verification code for a session
-      const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+      let data, error;
+      if (code) {
+        ({ data, error } = await supabase.auth.exchangeCodeForSession(code));
+      } else {
+        ({ data, error } = await supabase.auth.getSessionFromUrl());
+      }
 
-      if (error || !data.session) {
+      const session = data?.session;
+      if (error || !session) {
         setInfo("Keine gültige Session gefunden.");
         return;
       }
 
-      const user = data.session.user;
+      const user = session.user;
 
       const { vorname, nachname, geburtsdatum, matrikelnummer } =
         user.user_metadata || {};
