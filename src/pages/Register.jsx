@@ -77,7 +77,7 @@ const Register = () => {
       setLoading(false);
     }
   };
-
+  navigate("/");
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
       <form onSubmit={handleSubmit} className="bg-white p-8 rounded shadow w-full max-w-lg">
