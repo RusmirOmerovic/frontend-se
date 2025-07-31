@@ -1,13 +1,19 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 
 const Verify = () => {
   const navigate = useNavigate();
+  const [info, setInfo] = useState("Bestätigung läuft...");
 
   useEffect(() => {
     const confirmUser = async () => {
       const code = new URLSearchParams(window.location.search).get("code");
+
+      if (!code) {
+        setInfo("Bitte bestätige deine E-Mail über den zugeschickten Link.");
+        return;
+      }
 
       if (code) {
         const { error: exchangeError } =
@@ -27,7 +33,7 @@ const Verify = () => {
       } = await supabase.auth.getSession();
 
       if (sessionError || !session) {
-        alert("Keine gültige Session gefunden.");
+        setInfo("Keine gültige Session gefunden.");
         return;
       }
 
@@ -48,19 +54,19 @@ const Verify = () => {
       ]);
 
       if (insertError) {
-        alert("Profil konnte nicht gespeichert werden: " + insertError.message);
+        setInfo("Profil konnte nicht gespeichert werden: " + insertError.message);
         return;
       }
 
       sessionStorage.clear();
-      alert("E-Mail bestätigt! Du wirst weitergeleitet...");
-      navigate("/welcome");
+      setInfo("E-Mail bestätigt! Weiterleitung...");
+      setTimeout(() => navigate("/welcome"), 1000);
     };
 
     confirmUser();
   }, [navigate]);
 
-  return null;
+  return <p className="p-6 text-center">{info}</p>;
 };
 
 export default Verify;
