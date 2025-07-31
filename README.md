@@ -36,4 +36,4 @@ npm run lint
 
 After registering a user, Supabase sends a dynamic verification link to the provided e-mail address. The link redirects to the `/verify` route in this application where the verification is handled.
 
-When signing up, Supabase emails a dynamic verification link such as `https://localhost:5173/verify?code=...`. The `Verify.jsx` page reads this `code` value and calls `supabase.auth.exchangeCodeForSession(code)` to create the session before finishing the sign-up flow.
+When signing up, Supabase emails a verification link to `${window.location.origin}/verify` (for example `https://frontend-se-cyan.vercel.app/verify` in production). The `Verify.jsx` page reads the `code` value from the URL and calls `supabase.auth.exchangeCodeForSession(code)` to create the session before finishing the sign-up flow.
