@@ -57,11 +57,11 @@ const Register = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
+      {confirmationMsg && (
+        <p className="text-green-600 mb-3 text-center w-full max-w-lg">{confirmationMsg}</p>
+      )}
       <form onSubmit={handleSubmit} className="bg-white p-8 rounded shadow w-full max-w-lg">
         <h2 className="text-2xl font-bold mb-4">Registrieren mit Profil</h2>
-        {confirmationMsg && (
-          <p className="text-green-600 mb-3">{confirmationMsg}</p>
-        )}
         {error && <p className="text-red-500 mb-3">{error}</p>}
 
         {["vorname", "nachname", "geburtsdatum", "matrikelnummer", "email", "password"].map((field) => (
