@@ -79,7 +79,7 @@ const Dashboard = () => {
     fetchProjects();
   }, [role, user]);
 
-  // Account und Daten löschen (ohne Admin-Zugang kein DeleteUser möglich!)
+  // Account und Daten löschen – ohne Admin-Zugang ist deleteUser nicht möglich
   const handleDeleteAccount = async () => {
     if (!user?.id) return;
 
