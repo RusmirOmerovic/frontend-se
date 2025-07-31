@@ -1,26 +1,33 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 
 const Verify = () => {
   const navigate = useNavigate();
-  const [info, setInfo] = useState("Bestätigung läuft...");
 
   useEffect(() => {
     const confirmUser = async () => {
-      const params = new URLSearchParams(window.location.search);
-      const code = params.get("code");
+      const code = new URLSearchParams(window.location.search).get("code");
 
-      let data, error;
       if (code) {
-        ({ data, error } = await supabase.auth.exchangeCodeForSession(code));
-      } else {
-        ({ data, error } = await supabase.auth.getSessionFromUrl());
+        const { error: exchangeError } =
+          await supabase.auth.exchangeCodeForSession(code);
+        if (exchangeError) {
+          alert(
+            "Fehler beim Austausch des Verifizierungscodes: " +
+              exchangeError.message
+          );
+          return;
+        }
       }
 
-      const session = data?.session;
-      if (error || !session) {
-        setInfo("Keine gültige Session gefunden.");
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError || !session) {
+        alert("Keine gültige Session gefunden.");
         return;
       }
 
@@ -41,18 +48,19 @@ const Verify = () => {
       ]);
 
       if (insertError) {
-        console.error("Profil konnte nicht gespeichert werden:", insertError);
+        alert("Profil konnte nicht gespeichert werden: " + insertError.message);
+        return;
       }
 
       sessionStorage.clear();
-      setInfo("E-Mail bestätigt! Weiterleitung...");
-      setTimeout(() => navigate("/welcome"), 1000);
+      alert("E-Mail bestätigt! Du wirst weitergeleitet...");
+      navigate("/welcome");
     };
 
     confirmUser();
   }, [navigate]);
 
-  return <p className="p-6 text-center">{info}</p>;
+  return null;
 };
 
 export default Verify;
