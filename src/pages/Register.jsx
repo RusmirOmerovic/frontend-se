@@ -1,9 +1,7 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 
 const Register = () => {
-  const navigate = useNavigate();
   const [form, setForm] = useState({
     email: "",
     password: "",
@@ -14,6 +12,7 @@ const Register = () => {
   });
 
   const [error, setError] = useState(null);
+  const [confirmationMsg, setConfirmationMsg] = useState("");
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -22,6 +21,7 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+    setConfirmationMsg("");
 
     const { error } = await supabase.auth.signUp({
       email: form.email,
@@ -42,14 +42,26 @@ const Register = () => {
       return;
     }
 
-    alert("Registrierung erfolgreich. Bitte bestätige deine E-Mail.");
-    navigate("/");
+    setConfirmationMsg(
+      "Bitte bestätige deine E\u2011Mail über den zugeschickten Link."
+    );
+    setForm({
+      email: "",
+      password: "",
+      vorname: "",
+      nachname: "",
+      geburtsdatum: "",
+      matrikelnummer: "",
+    });
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
       <form onSubmit={handleSubmit} className="bg-white p-8 rounded shadow w-full max-w-lg">
         <h2 className="text-2xl font-bold mb-4">Registrieren mit Profil</h2>
+        {confirmationMsg && (
+          <p className="text-green-600 mb-3">{confirmationMsg}</p>
+        )}
         {error && <p className="text-red-500 mb-3">{error}</p>}
 
         {["vorname", "nachname", "geburtsdatum", "matrikelnummer", "email", "password"].map((field) => (
