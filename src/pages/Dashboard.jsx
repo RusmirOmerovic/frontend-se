@@ -77,6 +77,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchProjects();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [role, user]);
 
   // Account und Daten löschen – ohne Admin-Zugang ist deleteUser nicht möglich
@@ -100,6 +101,8 @@ const Dashboard = () => {
 
   // Profil anzeigen
   const [profile, setProfile] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+  const [editingProject, setEditingProject] = useState(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -120,6 +123,22 @@ const Dashboard = () => {
 
     fetchProfile();
   }, [user]);
+
+  const handleNew = () => {
+    setEditingProject(null);
+    setShowForm(true);
+  };
+
+  const handleEdit = (proj) => {
+    setEditingProject(proj);
+    setShowForm(true);
+  };
+
+  const handleDeleteProject = async (id) => {
+    await supabase.from("projects").delete().eq("id", id);
+    await supabase.storage.from("project-files").remove([`project/${id}`]);
+    fetchProjects();
+  };
 
   return (
     <div className="p-6">
@@ -162,7 +181,28 @@ const Dashboard = () => {
 
       {user && (
         <>
-          <ProjectForm user={user} onProjectSaved={fetchProjects} />
+          {showForm ? (
+            <ProjectForm
+              user={user}
+              project={editingProject}
+              onProjectSaved={() => {
+                fetchProjects();
+                setShowForm(false);
+                setEditingProject(null);
+              }}
+              onCancel={() => {
+                setShowForm(false);
+                setEditingProject(null);
+              }}
+            />
+          ) : (
+            <button
+              onClick={handleNew}
+              className="px-4 py-2 bg-blue-600 text-white rounded"
+            >
+              Neues Projekt
+            </button>
+          )}
           <button
             onClick={handleDeleteAccount}
             className="mt-4 px-4 py-2 bg-red-600 text-white rounded"
@@ -196,11 +236,37 @@ const Dashboard = () => {
                   timeStyle: "short",
                 })}
               </p>
+              {(role === "tutor" || proj.owner_id === user.id) && (
+                <div className="mt-2 space-x-2">
+                  <button
+                    onClick={() => handleEdit(proj)}
+                    className="px-2 py-1 bg-yellow-500 text-white rounded"
+                  >
+                    Bearbeiten
+                  </button>
+                  <button
+                    onClick={() => handleDeleteProject(proj.id)}
+                    className="px-2 py-1 bg-red-500 text-white rounded"
+                  >
+                    Löschen
+                  </button>
+                </div>
+              )}
             </li>
           ))}
         </ul>
       ) : (
-        <p className="mt-4">🔎 Keine Projekte gefunden.</p>
+        <div className="mt-4">
+          <p>Keine aktuellen Projekte</p>
+          {user && !showForm && (
+            <button
+              onClick={handleNew}
+              className="mt-2 px-4 py-2 bg-blue-600 text-white rounded"
+            >
+              Neues Projekt
+            </button>
+          )}
+        </div>
       )}
       {user && <ProfileEditor user={user} />}
     </div>

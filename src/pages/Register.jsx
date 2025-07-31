@@ -43,7 +43,7 @@ const Register = () => {
     }
 
     alert("Registrierung erfolgreich. Bitte bestätige deine E-Mail.");
-    navigate("/verify");
+    navigate("/");
   };
 
   return (

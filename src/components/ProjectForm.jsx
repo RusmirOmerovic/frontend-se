@@ -1,39 +1,64 @@
 import { useState } from "react";
 import { supabase } from "../supabaseClient";
 
-const ProjectForm = ({ user, onProjectSaved }) => {
-  const [name, setName] = useState("");
-  const [status, setStatus] = useState("in Arbeit");
-  const [startdatum, setStartdatum] = useState("");
-  const [meilensteine, setMeilensteine] = useState("");
+const ProjectForm = ({ user, onProjectSaved, project, onCancel }) => {
+  const [name, setName] = useState(project?.name || "");
+  const [status, setStatus] = useState(project?.status || "in Arbeit");
+  const [startdatum, setStartdatum] = useState(project?.startdatum || "");
+  const [meilensteine, setMeilensteine] = useState(project?.meilensteine || "");
+  const [file, setFile] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const { error } = await supabase.from("projects").insert([
-      {
-        name,
-        status,
-        startdatum,
-        meilensteine,
-        owner_id: user.id,
-      },
-    ]);
+    let projectId = project?.id;
+    let error;
+
+    if (projectId) {
+      ({ error } = await supabase
+        .from("projects")
+        .update({ name, status, startdatum, meilensteine })
+        .eq("id", projectId));
+    } else {
+      const { data, error: insertErr } = await supabase
+        .from("projects")
+        .insert([
+          { name, status, startdatum, meilensteine, owner_id: user.id },
+        ])
+        .select()
+        .single();
+      error = insertErr;
+      projectId = data?.id;
+    }
 
     if (error) {
       alert("❌ Fehler beim Speichern: " + error.message);
-    } else {
-      setName("");
-      setStatus("in Arbeit");
-      setStartdatum("");
-      setMeilensteine("");
-      if (onProjectSaved) onProjectSaved();
+      return;
     }
+
+    if (file && projectId) {
+      const { error: uploadError } = await supabase.storage
+        .from("project-files")
+        .upload(`project/${projectId}/${file.name}`, file, { upsert: true });
+      if (uploadError) {
+        alert("Fehler beim Datei-Upload: " + uploadError.message);
+      }
+    }
+
+    setName("");
+    setStatus("in Arbeit");
+    setStartdatum("");
+    setMeilensteine("");
+    setFile(null);
+    if (onProjectSaved) onProjectSaved();
+    if (onCancel) onCancel();
   };
 
   return (
     <form onSubmit={handleSubmit} className="bg-white p-4 shadow rounded mb-6">
-      <h2 className="text-lg font-bold mb-3">Projekt anlegen</h2>
+      <h2 className="text-lg font-bold mb-3">
+        {project ? "Projekt bearbeiten" : "Projekt anlegen"}
+      </h2>
 
       <input
         type="text"
@@ -68,12 +93,29 @@ const ProjectForm = ({ user, onProjectSaved }) => {
         className="w-full p-2 border rounded mb-3"
       />
 
-      <button
-        type="submit"
-        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-      >
-        Projekt speichern
-      </button>
+      <input
+        type="file"
+        onChange={(e) => setFile(e.target.files[0])}
+        className="mb-3"
+      />
+
+      <div className="space-x-2">
+        <button
+          type="submit"
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+        >
+          Speichern
+        </button>
+        {project && (
+          <button
+            type="button"
+            onClick={onCancel}
+            className="px-4 py-2 border rounded"
+          >
+            Abbrechen
+          </button>
+        )}
+      </div>
     </form>
   );
 };

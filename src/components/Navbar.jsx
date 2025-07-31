@@ -5,20 +5,36 @@ import { useEffect, useState } from "react";
 function Navbar() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user);
+      if (user) loadProfile(user.id);
     });
 
     const { data: listener } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setUser(session?.user ?? null);
+        if (session?.user) {
+          loadProfile(session.user.id);
+        } else {
+          setProfile(null);
+        }
       }
     );
 
     return () => listener.subscription.unsubscribe();
   }, []);
+
+  const loadProfile = async (uid) => {
+    const { data } = await supabase
+      .from("user_profiles")
+      .select("vorname, nachname")
+      .eq("id", uid)
+      .single();
+    if (data) setProfile(data);
+  };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -40,9 +56,11 @@ function Navbar() {
         <Link to="/dashboard" className="hover:text-purple-600">
           Dashboard
         </Link>
-        <Link to="/register" className="hover:text-blue-600">
-          Registrieren
-        </Link>
+        {!user && (
+          <Link to="/register" className="hover:text-blue-600">
+            Registrieren
+          </Link>
+        )}
 
         {!user && (
           <Link to="/login" className="text-black hover:text-blue-600">
@@ -52,7 +70,7 @@ function Navbar() {
         {user && (
           <>
             <span className="text-gray-500 text-sm hidden sm:inline">
-              👤 {user.email}
+              👤 {profile ? `${profile.vorname} ${profile.nachname}` : user.email}
             </span>
             <button
               onClick={handleLogout}
