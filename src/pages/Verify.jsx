@@ -8,36 +8,16 @@ const Verify = () => {
 
   useEffect(() => {
     const confirmUser = async () => {
-      const code = new URLSearchParams(window.location.search).get("code");
+      const { data, error } = await supabase.auth.getSessionFromUrl({
+        storeSession: true,
+      });
 
-      if (!code) {
-        setInfo("Bitte bestätige deine E-Mail über den zugeschickten Link.");
-        return;
-      }
-
-      if (code) {
-        const { error: exchangeError } =
-          await supabase.auth.exchangeCodeForSession(code);
-        if (exchangeError) {
-          alert(
-            "Fehler beim Austausch des Verifizierungscodes: " +
-              exchangeError.message
-          );
-          return;
-        }
-      }
-
-      const {
-        data: { session },
-        error: sessionError,
-      } = await supabase.auth.getSession();
-
-      if (sessionError || !session) {
+      if (error || !data.session) {
         setInfo("Keine gültige Session gefunden.");
         return;
       }
 
-      const user = session.user;
+      const user = data.session.user;
 
       const { vorname, nachname, geburtsdatum, matrikelnummer } =
         user.user_metadata || {};
@@ -54,8 +34,7 @@ const Verify = () => {
       ]);
 
       if (insertError) {
-        setInfo("Profil konnte nicht gespeichert werden: " + insertError.message);
-        return;
+        console.error("Profil konnte nicht gespeichert werden:", insertError);
       }
 
       sessionStorage.clear();
