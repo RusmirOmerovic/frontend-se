@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { supabase } from "../supabaseClient"; // Stelle sicher, dass dein Supabase Client korrekt exportiert ist
+import { useNavigate } from "react-router-dom";
+import { supabase } from "../supabaseClient";
 
-export default function RegisterForm() {
-  const [formData, setFormData] = useState({
+const Register = () => {
+  const navigate = useNavigate();
+  const [form, setForm] = useState({
     email: "",
     password: "",
     vorname: "",
@@ -11,121 +13,70 @@ export default function RegisterForm() {
     matrikelnummer: "",
   });
 
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [successMsg, setSuccessMsg] = useState("");
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleRegister = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
-    setSuccessMsg("");
 
-    // 1. Nutzer registrieren
-    const { data: authData, error: signUpError } = await supabase.auth.signUp({
-      email: formData.email,
-      password: formData.password,
+    const { error } = await supabase.auth.signUp({
+      email: form.email,
+      password: form.password,
+      options: {
+        data: {
+          vorname: form.vorname,
+          nachname: form.nachname,
+          geburtsdatum: form.geburtsdatum,
+          matrikelnummer: form.matrikelnummer,
+        },
+        emailRedirectTo: "https://frontend-se-cyan.vercel.app/verify", // ← muss exakt zu deinem Projekt passen!
+      },
     });
 
-    if (signUpError) {
-      setError(signUpError.message);
-      setLoading(false);
+    if (error) {
+      setError(error.message);
       return;
     }
 
-    const userId = authData.user?.id;
-
-    // 2. Profildaten einfügen
-    const { error: insertError } = await supabase.from("user_profiles").insert([
-      {
-        id: userId, // wichtig wegen RLS!
-        vorname: formData.vorname,
-        nachname: formData.nachname,
-        geburtsdatum: formData.geburtsdatum,
-        matrikelnummer: formData.matrikelnummer,
-      },
-    ]);
-
-    if (insertError) {
-      setError(insertError.message);
-    } else {
-      setSuccessMsg("Registrierung erfolgreich! Bitte bestätige deine E-Mail.");
-      setFormData({
-        email: "",
-        password: "",
-        vorname: "",
-        nachname: "",
-        geburtsdatum: "",
-        matrikelnummer: "",
-      });
-    }
-
-    setLoading(false);
+    alert("Registrierung erfolgreich. Bitte bestätige deine E-Mail.");
+    navigate("/verify");
   };
 
   return (
-    <form onSubmit={handleRegister} className="space-y-4 max-w-md mx-auto">
-      <h2 className="text-xl font-bold">Registrierung</h2>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
+      <form onSubmit={handleSubmit} className="bg-white p-8 rounded shadow w-full max-w-lg">
+        <h2 className="text-2xl font-bold mb-4">Registrieren mit Profil</h2>
+        {error && <p className="text-red-500 mb-3">{error}</p>}
 
-      {error && <div className="text-red-600">{error}</div>}
-      {successMsg && <div className="text-green-600">{successMsg}</div>}
+        {["vorname", "nachname", "geburtsdatum", "matrikelnummer", "email", "password"].map((field) => (
+          <input
+            key={field}
+            name={field}
+            type={field === "password" ? "password" : field === "geburtsdatum" ? "date" : "text"}
+            placeholder={
+              field.charAt(0).toUpperCase() +
+              field
+                .slice(1)
+                .replace("geburtsdatum", "Geburtsdatum")
+                .replace("matrikelnummer", "Matrikelnummer")
+            }
+            value={form[field]}
+            onChange={handleChange}
+            required
+            className="w-full p-2 border mb-3 rounded"
+          />
+        ))}
 
-      <input
-        type="text"
-        name="vorname"
-        placeholder="Vorname"
-        value={formData.vorname}
-        onChange={handleChange}
-        required
-      />
-      <input
-        type="text"
-        name="nachname"
-        placeholder="Nachname"
-        value={formData.nachname}
-        onChange={handleChange}
-        required
-      />
-      <input
-        type="date"
-        name="geburtsdatum"
-        placeholder="Geburtsdatum"
-        value={formData.geburtsdatum}
-        onChange={handleChange}
-        required
-      />
-      <input
-        type="text"
-        name="matrikelnummer"
-        placeholder="Matrikelnummer"
-        value={formData.matrikelnummer}
-        onChange={handleChange}
-        required
-      />
-      <input
-        type="email"
-        name="email"
-        placeholder="E-Mail"
-        value={formData.email}
-        onChange={handleChange}
-        required
-      />
-      <input
-        type="password"
-        name="password"
-        placeholder="Passwort"
-        value={formData.password}
-        onChange={handleChange}
-        required
-      />
-
-      <button type="submit" disabled={loading}>
-        {loading ? "Registriere..." : "Registrieren"}
-      </button>
-    </form>
+        <button type="submit" className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded">
+          Registrieren
+        </button>
+      </form>
+    </div>
   );
-}
+};
+
+export default Register;
