@@ -8,9 +8,11 @@ const Verify = () => {
 
   useEffect(() => {
     const confirmUser = async () => {
-      const { data, error } = await supabase.auth.getSessionFromUrl({
-        storeSession: true,
-      });
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get("code");
+
+      // Exchange the verification code for a session
+      const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
       if (error || !data.session) {
         setInfo("Keine gültige Session gefunden.");
