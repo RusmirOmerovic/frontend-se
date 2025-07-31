@@ -36,8 +36,8 @@ const ProjectDetail = () => {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-2">{project.title}</h1>
-      <p className="mb-4 text-gray-700">{project.description}</p>
+      <h1 className="text-2xl font-bold mb-2">{project.name}</h1>
+      <p className="mb-4 text-gray-700">{project.meilensteine}</p>
 
       <h2 className="text-lg font-semibold mt-6 mb-2">📍 Meilensteine</h2>
       {milestones.length > 0 ? (
