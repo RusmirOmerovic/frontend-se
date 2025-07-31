@@ -7,6 +7,20 @@ const Verify = () => {
 
   useEffect(() => {
     const confirmUser = async () => {
+      const code = new URLSearchParams(window.location.search).get("code");
+
+      if (code) {
+        const { error: exchangeError } =
+          await supabase.auth.exchangeCodeForSession(code);
+        if (exchangeError) {
+          alert(
+            "Fehler beim Austausch des Verifizierungscodes: " +
+              exchangeError.message
+          );
+          return;
+        }
+      }
+
       const {
         data: { session },
         error: sessionError,
