@@ -33,7 +33,7 @@ const Register = () => {
           geburtsdatum: form.geburtsdatum,
           matrikelnummer: form.matrikelnummer,
         },
-        emailRedirectTo: "https://frontend-se-cyan.vercel.app/verify", // ← muss exakt zu deinem Projekt passen!
+        emailRedirectTo: `${window.location.origin}/verify`,
       },
     });
 
