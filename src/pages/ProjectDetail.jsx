@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 
-const ProjectDetails = () => {
+const ProjectDetail = () => {
   const { id } = useParams(); // Projekt-ID aus der URL
   const [project, setProject] = useState(null);
   const [milestones, setMilestones] = useState([]);
@@ -77,4 +77,4 @@ const ProjectDetails = () => {
   );
 };
 
-export default ProjectDetails;
+export default ProjectDetail;
