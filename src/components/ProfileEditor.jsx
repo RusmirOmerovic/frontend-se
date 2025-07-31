@@ -3,8 +3,8 @@ import { supabase } from "../supabaseClient";
 
 const ProfileEditor = ({ user }) => {
   const [form, setForm] = useState({
-    Vorname: "",
-    Nachname: "",
+    vorname: "",
+    nachname: "",
     geburtsdatum: "",
     matrikelnummer: "",
   });
@@ -32,8 +32,8 @@ const ProfileEditor = ({ user }) => {
     const { error } = await supabase
       .from("user_profiles")
       .update({
-        Vorname: form.Vorname,
-        Nachname: form.Nachname,
+        vorname: form.vorname,
+        nachname: form.nachname,
         geburtsdatum: form.geburtsdatum,
         matrikelnummer: form.matrikelnummer,
       })
@@ -50,7 +50,7 @@ const ProfileEditor = ({ user }) => {
     <form onSubmit={handleSubmit} className="bg-white p-4 rounded shadow mt-4">
       <h2 className="text-lg font-semibold mb-2">🛠️ Profil bearbeiten</h2>
       <div className="space-y-2">
-        {["Vorname", "Nachname", "geburtsdatum", "matrikelnummer"].map(
+        {["vorname", "nachname", "geburtsdatum", "matrikelnummer"].map(
           (field) => (
             <input
               key={field}
@@ -58,7 +58,7 @@ const ProfileEditor = ({ user }) => {
               value={form[field]}
               onChange={handleChange}
               type={field === "geburtsdatum" ? "date" : "text"}
-              placeholder={field}
+              placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
               className="w-full p-2 border rounded"
             />
           )

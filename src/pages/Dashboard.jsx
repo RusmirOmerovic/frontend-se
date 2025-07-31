@@ -135,10 +135,10 @@ const Dashboard = () => {
         <div className="bg-white p-4 rounded shadow mb-4">
           <h2 className="text-lg font-semibold mb-2">👤 Profildaten</h2>
           <p>
-            <strong>Vorname:</strong> {profile.Vorname}
+            <strong>Vorname:</strong> {profile.vorname}
           </p>
           <p>
-            <strong>Nachname:</strong> {profile.Nachname}
+            <strong>Nachname:</strong> {profile.nachname}
           </p>
           <p>
             <strong>Geburtsdatum:</strong>{" "}
@@ -152,7 +152,7 @@ const Dashboard = () => {
 
       {profile && (
         <div className="mb-4 text-sm text-gray-600">
-          👤 {profile.Vorname} {profile.Nachname}
+          👤 {profile.vorname} {profile.nachname}
           <br />
           🎂 Geburtsdatum: {profile.geburtsdatum}
           <br />
