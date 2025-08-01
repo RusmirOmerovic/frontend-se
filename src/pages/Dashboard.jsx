@@ -93,8 +93,11 @@ const Dashboard = () => {
     // 3. user_roles löschen
     await supabase.from("user_roles").delete().eq("user_id", user.id);
 
-    // 4. Benutzer-Session invalidieren (Löschen geht nur mit Service Key!)
-    alert("Account-Inhalte gelöscht. Bitte manuell aus Supabase löschen.");
+    // 4. user_profiles löschen
+    await supabase.from("user_profiles").delete().eq("id", user.id);
+
+    // 5. Benutzer-Session invalidieren (Löschen geht nur mit Service Key!)
+    alert("Account-Inhalte gelöscht. Benutzer muss manuell aus Supabase entfernt werden.");
     await supabase.auth.signOut();
     window.location.href = "/";
   };

@@ -12,7 +12,6 @@ import ProfileUpdate from "./pages/ProfileUpdate";
 import { Navigate } from "react-router-dom";
 import Welcome from "./pages/Welcome";
 
-
 function App() {
   const [user, setUser] = useState(null);
 
