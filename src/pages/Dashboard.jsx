@@ -1,38 +1,35 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
 import ProjectForm from "../components/ProjectForm";
+import CommentsSection from "../components/CommentsSection";
 
 const Dashboard = () => {
   const [projects, setProjects] = useState([]);
   const [role, setRole] = useState(null);
   const [user, setUser] = useState(null);
 
-  // Rolle beim ersten Login erkennen und in DB schreiben
+  // Rolle ermitteln oder bei Bedarf anlegen
   const assignRoleIfMissing = async (user) => {
-    const { data: existing, error: roleError } = await supabase
+    const { data: existing } = await supabase
       .from("user_roles")
-      .select("*")
+      .select("role")
       .eq("user_id", user.id)
       .single();
 
-    if (roleError || !existing) {
-      const email = user.email || "";
-      const newRole = email.includes("@web.de") ? "tutor" : "student";
-
-      const { error: insertError } = await supabase.from("user_roles").insert([
-        {
-          user_id: user.id,
-          role: newRole,
-        },
-      ]);
-
-      if (insertError) {
-        console.error("Fehler beim Rollen-Insert:", insertError.message);
-      } else {
-        setRole(newRole);
-      }
-    } else {
+    if (existing) {
       setRole(existing.role);
+      return;
+    }
+
+    const newRole = user.email?.includes("@web.de") ? "tutor" : "student";
+    const { error: insertError } = await supabase
+      .from("user_roles")
+      .insert([{ user_id: user.id, role: newRole }]);
+
+    if (insertError) {
+      console.error("Fehler beim Rollen-Insert:", insertError.message);
+    } else {
+      setRole(newRole);
     }
   };
 
@@ -196,12 +193,14 @@ const Dashboard = () => {
               }}
             />
           ) : (
-            <button
-              onClick={handleNew}
-              className="px-4 py-2 bg-blue-600 text-white rounded"
-            >
-              Neues Projekt
-            </button>
+            role === "student" && (
+              <button
+                onClick={handleNew}
+                className="px-4 py-2 bg-blue-600 text-white rounded"
+              >
+                Neues Projekt
+              </button>
+            )
           )}
           <button
             onClick={handleDeleteAccount}
@@ -236,7 +235,7 @@ const Dashboard = () => {
                   timeStyle: "short",
                 })}
               </p>
-              {(role === "tutor" || proj.owner_id === user.id) && (
+              {role === "student" && proj.owner_id === user.id && (
                 <div className="mt-2 space-x-2">
                   <button
                     onClick={() => handleEdit(proj)}
@@ -252,13 +251,16 @@ const Dashboard = () => {
                   </button>
                 </div>
               )}
+              {role === "tutor" && (
+                <CommentsSection projectId={proj.id} user={user} />
+              )}
             </li>
           ))}
         </ul>
       ) : (
         <div className="mt-4">
           <p>Keine aktuellen Projekte</p>
-          {user && !showForm && (
+          {user && !showForm && role === "student" && (
             <button
               onClick={handleNew}
               className="mt-2 px-4 py-2 bg-blue-600 text-white rounded"
