@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
 import ProjectForm from "../components/ProjectForm";
 import CommentsSection from "../components/CommentsSection";
+import ProfileEditor from "../components/ProfileEditor";
+
+
 
 const Dashboard = () => {
   const [projects, setProjects] = useState([]);
