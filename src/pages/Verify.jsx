@@ -1,9 +1,10 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 
 const Verify = () => {
   const navigate = useNavigate();
+  const [info, setInfo] = useState("Bestätigung läuft...");
 
   useEffect(() => {
     const confirmUser = async () => {
@@ -63,14 +64,14 @@ const Verify = () => {
       }
 
       sessionStorage.clear();
-      alert("E-Mail bestätigt! Du wirst weitergeleitet...");
-      navigate("/welcome");
+      setInfo("E-Mail bestätigt! Weiterleitung...");
+      setTimeout(() => navigate("/welcome"), 1000);
     };
 
     confirmUser();
   }, [navigate]);
 
-  return null;
+  return <p className="p-6 text-center">{info}</p>;
 };
 
 export default Verify;
