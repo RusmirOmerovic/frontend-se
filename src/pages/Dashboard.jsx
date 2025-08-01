@@ -251,9 +251,9 @@ const Dashboard = () => {
                   </button>
                 </div>
               )}
-              {role === "tutor" && (
+              
                 <CommentsSection projectId={proj.id} user={user} />
-              )}
+              
             </li>
           ))}
         </ul>

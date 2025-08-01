@@ -36,7 +36,9 @@ const Verify = () => {
 
       const { vorname, nachname, geburtsdatum, matrikelnummer } =
         user.user_metadata || {};
+      const role = user.email?.includes("@web.de") ? "tutor" : "student";
 
+      //Profil speichern 
       const { error: insertProfileError } = await supabase
         .from("user_profiles")
         .insert([
@@ -49,8 +51,7 @@ const Verify = () => {
             matrikelnummer,
           },
         ]);
-
-      const role = user.email?.includes("@web.de") ? "tutor" : "student";
+      // Rolle speichern
       const { error: insertRoleError } = await supabase
         .from("user_roles")
         .insert([{ user_id: user.id, role }]);
