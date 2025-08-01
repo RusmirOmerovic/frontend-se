@@ -43,7 +43,7 @@ const Register = () => {
     }
 
     setConfirmationMsg(
-      "Bitte bestätige deine E\u2011Mail über den zugeschickten Link."
+      "Bitte bestätige deine E-Mail über den zugeschickten Link. Danach wird dein Profil aktiviert."
     );
     setForm({
       email: "",
