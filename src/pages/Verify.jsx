@@ -36,19 +36,29 @@ const Verify = () => {
       const { vorname, nachname, geburtsdatum, matrikelnummer } =
         user.user_metadata || {};
 
-      const { error: insertError } = await supabase.from("user_profiles").insert([
-        {
-          id: user.id,
-          email: user.email,
-          vorname,
-          nachname,
-          geburtsdatum,
-          matrikelnummer,
-        },
-      ]);
+      const { error: insertProfileError } = await supabase
+        .from("user_profiles")
+        .insert([
+          {
+            id: user.id,
+            email: user.email,
+            vorname,
+            nachname,
+            geburtsdatum,
+            matrikelnummer,
+          },
+        ]);
 
-      if (insertError) {
-        alert("Profil konnte nicht gespeichert werden: " + insertError.message);
+      const role = user.email?.includes("@web.de") ? "tutor" : "student";
+      const { error: insertRoleError } = await supabase
+        .from("user_roles")
+        .insert([{ user_id: user.id, role }]);
+
+      if (insertProfileError || insertRoleError) {
+        alert(
+          "Profil oder Rolle konnten nicht gespeichert werden: " +
+            (insertProfileError || insertRoleError).message
+        );
         return;
       }
 

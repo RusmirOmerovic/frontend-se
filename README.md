@@ -37,3 +37,7 @@ npm run lint
 After registering a user, Supabase sends a dynamic verification link to the provided e-mail address. The link redirects to the `/verify` route in this application where the verification is handled.
 
 When signing up, Supabase emails a verification link to `${window.location.origin}/verify` (for example `https://frontend-se-cyan.vercel.app/verify` in production). The `Verify.jsx` page reads the `code` value from the URL and calls `supabase.auth.exchangeCodeForSession(code)` to create the session before finishing the sign-up flow.
+
+## Rollenbasierte Nutzung
+
+Nach der E-Mail-Bestätigung wird der Nutzer neben den Profildaten auch mit einer Rolle in der Tabelle `user_roles` gespeichert. Aus der Mail-Endung wird automatisch die Rolle `tutor` (bei `@web.de`) oder `student` bestimmt. Studierende können Projekte anlegen, bearbeiten und löschen, Tutoren sehen alle Projekte und können diese kommentieren.
