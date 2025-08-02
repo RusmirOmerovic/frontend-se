@@ -2,11 +2,13 @@ import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 import { useEffect, useState } from "react";
 
+// Navigationsleiste mit Login-Status und Profilinformationen
 function Navbar() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
 
+  // Abonniert Auth-Änderungen und lädt ggf. das Profil
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user);
@@ -27,6 +29,7 @@ function Navbar() {
     return () => listener.subscription.unsubscribe();
   }, []);
 
+  // Lädt Basisprofilinformationen eines Nutzers
   const loadProfile = async (uid) => {
     const { data } = await supabase
       .from("user_profiles")
@@ -36,6 +39,7 @@ function Navbar() {
     if (data) setProfile(data);
   };
 
+  // Meldet den Nutzer ab und leitet zur Login-Seite weiter
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/login");

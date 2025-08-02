@@ -6,12 +6,13 @@ import ProfileEditor from "../components/ProfileEditor";
 import MilestoneList from "../components/MilestoneList";
 
 
+// Dashboard zeigt Projekte und verwaltet Rollen- und Profilinformationen
 const Dashboard = () => {
   const [projects, setProjects] = useState([]);
   const [role, setRole] = useState(null);
   const [user, setUser] = useState(null);
 
-  // Rolle ermitteln oder bei Bedarf anlegen
+  // Ermittelt die Rolle des Nutzers und legt sie bei Bedarf an
   const assignRoleIfMissing = async (user) => {
     const { data: existing, error } = await supabase
       .from("user_roles")
@@ -46,9 +47,9 @@ const Dashboard = () => {
         setRole(newRole);
     }
   };
-  // Sicherheitsmechanismus einmal assingRoleIfMissing aufzurufen
+  // Sicherheitsmechanismus einmal assignRoleIfMissing aufzurufen
   const [roleChecked, setRoleChecked] = useState(false);
-  // Session und Rolle holen
+  // Holt Session und initialisiert Rolle sowie Nutzer
   useEffect(() => {
     const fetchSession = async () => {
       const {
@@ -72,7 +73,7 @@ const Dashboard = () => {
     fetchSession();
   }, [roleChecked]);
 
-  // Projekte laden (für Studenten nur eigene)
+  // Lädt Projekte aus der Datenbank; Studenten sehen nur eigene Projekte
   const fetchProjects = async () => {
     if (!role || !user?.id) return;
 
@@ -95,7 +96,7 @@ const Dashboard = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [role, user]);
 
-  // Account und Daten löschen – ohne Admin-Zugang ist deleteUser nicht möglich
+  // Entfernt alle eigenen Daten des Nutzers und meldet ihn ab
   const handleDeleteAccount = async () => {
     if (!user?.id) return;
 
@@ -117,11 +118,12 @@ const Dashboard = () => {
     window.location.href = "/";
   };
 
-  // Profil anzeigen
+  // Profilzustand und Formularsteuerung
   const [profile, setProfile] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
 
+  // Lädt Profildaten des angemeldeten Nutzers
   useEffect(() => {
     const fetchProfile = async () => {
       if (!user) return;
@@ -142,16 +144,19 @@ const Dashboard = () => {
     fetchProfile();
   }, [user]);
 
+  // Öffnet das Formular zum Anlegen eines neuen Projekts
   const handleNew = () => {
     setEditingProject(null);
     setShowForm(true);
   };
 
+  // Öffnet das Formular zum Bearbeiten eines bestehenden Projekts
   const handleEdit = (proj) => {
     setEditingProject(proj);
     setShowForm(true);
   };
 
+  // Löscht ein Projekt samt zugehörigen Dateien
   const handleDeleteProject = async (id) => {
     await supabase.from("projects").delete().eq("id", id);
     await supabase.storage.from("project-files").remove([`project/${id}`]);

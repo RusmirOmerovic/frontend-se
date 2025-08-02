@@ -2,6 +2,7 @@ import { useState } from "react";
 import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
 
+// Seite für Login und Registrierung über ein gemeinsames Formular
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
@@ -9,6 +10,7 @@ const AuthPage = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
+  // Reicht die Eingaben an Supabase weiter und behandelt Login oder Registrierung
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);

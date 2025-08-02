@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
 
+// Komponente zur Anzeige und Erstellung von Projektkommentaren
 const CommentsSection = ({ projectId, user }) => {
   const [comments, setComments] = useState([]);
   const [text, setText] = useState("");
 
+  // Lädt alle Kommentare für das angegebene Projekt
   const fetchComments = async () => {
     const { data } = await supabase
       .from("comments")
@@ -14,11 +16,13 @@ const CommentsSection = ({ projectId, user }) => {
     if (data) setComments(data);
   };
 
+  // Aktualisiert die Kommentarübersicht bei Änderung der Projekt-ID
   useEffect(() => {
     fetchComments();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
 
+  // Fügt einen neuen Kommentar hinzu und lädt anschließend die Liste neu
   const handleAdd = async () => {
     if (!text.trim()) return;
     await supabase

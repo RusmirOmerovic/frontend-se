@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
-// Formular zur Bearbeitung des Nutzerprofils
+
+// Formular-Komponente zum Bearbeiten der Profildaten eines Nutzers
 const ProfileEditor = ({ user }) => {
   const [form, setForm] = useState({
     vorname: "",
@@ -10,7 +11,8 @@ const ProfileEditor = ({ user }) => {
     passwort: "",
     passwortBestätigen: "",
   });
-// Initialisiere das Formular mit den aktuellen Nutzerdaten
+
+  // Lädt vorhandene Profilwerte und füllt das Formular
   useEffect(() => {
     const fetchProfile = async () => {
       const { data } = await supabase
@@ -24,10 +26,12 @@ const ProfileEditor = ({ user }) => {
 
     fetchProfile();
   }, [user]);
-// Handle Änderungen im Formular
+
+  // Aktualisiert den Formularzustand bei Eingaben
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
+  // Speichert Profiländerungen und optional das Passwort
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -38,7 +42,6 @@ const ProfileEditor = ({ user }) => {
         nachname: form.nachname,
         geburtsdatum: form.geburtsdatum,
         matrikelnummer: form.matrikelnummer,
-
       })
       .eq("id", user.id);
 
@@ -47,28 +50,26 @@ const ProfileEditor = ({ user }) => {
     } else {
       alert("Profil aktualisiert");
     }
-// Passwortänderung
+
     if (form.passwort && form.passwort === form.passwortBestätigen) {
       await updatePassword(form.passwort);
     } else if (form.passwort || form.passwortBestätigen) {
       alert("Passwörter stimmen nicht überein");
     }
   };
-// Funktion zum Aktualisieren des Passworts 
-    const updatePassword = async (newPassword) => {
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword,
-      });
+
+  // Setzt ein neues Passwort für den angemeldeten Nutzer
+  const updatePassword = async (newPassword) => {
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
 
     if (error) {
-    console.error("Fehler beim Ändern des Passworts:", error.message);
+      console.error("Fehler beim Ändern des Passworts:", error.message);
     } else {
-        alert("Passwort erfolgreich geändert.");
+      alert("Passwort erfolgreich geändert.");
     }
   };
-
-// Formular zur Bearbeitung des Profils
-
 
   return (
     <form onSubmit={handleSubmit} className="bg-white p-4 rounded shadow mt-4">

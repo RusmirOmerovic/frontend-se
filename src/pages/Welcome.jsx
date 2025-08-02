@@ -2,9 +2,11 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
 
+// Begrüßungsseite nach erfolgreicher Registrierung
 const Welcome = () => {
   const [profile, setProfile] = useState(null);
 
+  // Holt die Profilinformationen des aktuellen Nutzers
   useEffect(() => {
     const fetchData = async () => {
       const { data: { user } } = await supabase.auth.getUser();

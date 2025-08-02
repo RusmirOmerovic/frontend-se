@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../supabaseClient";
 
+// Seite zum Aktualisieren grundlegender Profildaten
 const ProfileUpdate = () => {
   const [profile, setProfile] = useState({
     vorname: "",
@@ -12,6 +13,7 @@ const ProfileUpdate = () => {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
+  // Lädt bestehende Profildaten beim ersten Rendern
   useEffect(() => {
     const fetchProfile = async () => {
       const { data: user } = await supabase.auth.getUser();
@@ -28,10 +30,12 @@ const ProfileUpdate = () => {
     fetchProfile();
   }, []);
 
+  // Aktualisiert den lokalen Profilzustand bei Eingaben
   const handleChange = (e) => {
     setProfile({ ...profile, [e.target.name]: e.target.value });
   };
 
+  // Speichert die Änderungen des Profils in der Datenbank
   const handleSubmit = async (e) => {
     e.preventDefault();
     const { error } = await supabase

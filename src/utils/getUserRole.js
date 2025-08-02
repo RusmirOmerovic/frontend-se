@@ -1,5 +1,6 @@
 import { supabase } from '../supabaseClient';
 
+// Ermittelt die Rolle eines Nutzers anhand seiner ID
 export async function getUserRole(userId) {
   const { data, error } = await supabase
     .from('user_roles')
