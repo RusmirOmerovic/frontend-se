@@ -238,12 +238,21 @@ const Dashboard = () => {
             <li key={proj.id} className="bg-white rounded shadow p-4">
               <p>
                 <strong>📁 Projekt:</strong>{" "}
+                {proj.name ? (
+                  <>
+                    {proj.name} (
                 <a
                   href={`/project/${proj.id}`}
                   className="text-blue-500 underline"
                 >
                   Details ansehen
-                </a>
+                </a>)
+                </>
+                ) : (
+                  <a href={`/projekt/${proj.id}`} className="text-blue-600 underline">
+                    Details ansehen
+                  </a>
+                )}
               </p>
 
               <p>
