@@ -7,9 +7,6 @@ const ProjectDetail = () => {
   const [project, setProject] = useState(null);
   const [milestones, setMilestones] = useState([]);
 
-  // ✅ Zeigt die ID aus der URL in der Konsole
-  console.log("useParams().id:", id);
-
   useEffect(() => {
     const fetchProject = async () => {
       const { data, error } = await supabase
@@ -25,11 +22,10 @@ const ProjectDetail = () => {
       const { data, error } = await supabase
         .from("milestones")
         .select("*")
-        .eq("project_id", id)
+        .eq("project_id", id) // ✅ wichtig: KEIN "s" am Ende
         .order("due_date", { ascending: true });
 
       console.log("Geladene Milestones:", data);  
-
       if (!error) setMilestones(data);
     };
 
@@ -42,7 +38,6 @@ const ProjectDetail = () => {
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-2">{project.name}</h1>
-      <p className="mb-4 text-gray-700">{project.meilensteine}</p>
 
       <h2 className="text-lg font-semibold mt-6 mb-2">📍 Meilensteine</h2>
       {milestones.length > 0 ? (
@@ -61,9 +56,7 @@ const ProjectDetail = () => {
                 <td className="p-2 border">{m.title}</td>
                 <td className="p-2 border">{m.description}</td>
                 <td className="p-2 border">
-                  {m.due_date
-                    ? new Date(m.due_date).toLocaleDateString()
-                    : "-"}
+                  {m.due_date ? new Date(m.due_date).toLocaleDateString() : "-"}
                 </td>
                 <td className="p-2 border">{m.status}</td>
               </tr>
@@ -74,10 +67,7 @@ const ProjectDetail = () => {
         <p className="text-gray-600">Keine Meilensteine vorhanden.</p>
       )}
 
-      <Link
-        to="/dashboard"
-        className="text-blue-600 underline mt-6 inline-block"
-      >
+      <Link to="/dashboard" className="text-blue-600 underline mt-6 inline-block">
         🔙 Zurück zum Dashboard
       </Link>
     </div>
