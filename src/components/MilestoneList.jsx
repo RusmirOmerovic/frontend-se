@@ -25,7 +25,10 @@ const MilestoneList = ({ projectId }) => {
   return (
     <ul className="mt-2 pl-4 list-disc text-sm text-gray-700">
       {milestones.map((m) => (
+      <>
         <li key={m.id}>{m.title}</li>
+        <li key={m.id}>{m.completed ? "✅ " : "🔘 "}{m.title}</li>
+      </>
       ))}
     </ul>
   );

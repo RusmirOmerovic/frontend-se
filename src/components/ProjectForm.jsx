@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { supabase } from "../supabaseClient";
+import MilestoneList from "./MilestoneList";
 
 const ProjectForm = ({ user, onProjectSaved, project, onCancel }) => {
   const [name, setName] = useState(project?.name || "");
@@ -63,7 +64,13 @@ const ProjectForm = ({ user, onProjectSaved, project, onCancel }) => {
       if (milestonesToInsert.length > 0) {
         const { error: msError } = await supabase
           .from("milestones")
-          .insert(milestonesToInsert);
+          .insert([[
+            {
+              project_id: projectId,
+              title: "MS01",
+              completed: false,
+            },
+          ]]);
 
         if (msError) {
           alert("Fehler beim Speichern der Meilensteine: " + msError.message);
