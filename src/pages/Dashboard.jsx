@@ -17,14 +17,15 @@ const Dashboard = () => {
       .from("user_roles")
       .select("role")
       .eq("user_id", user.id)
+      .maybeSingle();
 
     if (error) {
       console.error("Fehler beim Abrufen der Rolle:", error.message);
       return;
     }
 
-    if (data.length > 0) {
-      setRole(data[0].role);
+    if (data) {
+      setRole(data.role);
       return;
     }
   //Wenn keine Rolle vorhanden ist, dann anlegen
