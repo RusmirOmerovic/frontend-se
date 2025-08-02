@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 
+// Verifiziert den Benutzer über den E-Mail-Link und legt Profil sowie Rolle an
 const Verify = () => {
   const navigate = useNavigate();
   const [info, setInfo] = useState("Bestätigung läuft...");
 
+  // Tauscht den Verifizierungscode gegen eine Session und speichert Profildaten
   useEffect(() => {
     const confirmUser = async () => {
       const code = new URLSearchParams(window.location.search).get("code");
@@ -38,7 +40,7 @@ const Verify = () => {
         user.user_metadata || {};
       const role = user.email?.includes("@web.de") ? "tutor" : "student";
 
-      //Profil speichern 
+      // Profil speichern
       const { error: insertProfileError } = await supabase
         .from("user_profiles")
         .insert([

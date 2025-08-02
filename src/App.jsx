@@ -12,23 +12,22 @@ import ProfileUpdate from "./pages/ProfileUpdate";
 import { Navigate } from "react-router-dom";
 import Welcome from "./pages/Welcome";
 
+// Hauptkomponente der Anwendung: steuert Routing und Authentifizierungsstatus
 function App() {
   const [user, setUser] = useState(null);
 
+  // Initialisiert den Nutzer und registriert einen Listener für Auth-Änderungen
   useEffect(() => {
-    // Nutzer direkt beim Start holen
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user);
     });
 
-    // Listener für Login / Logout
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
     });
 
-    // Aufräumen beim Verlassen der Komponente
     return () => {
       subscription.unsubscribe();
     };

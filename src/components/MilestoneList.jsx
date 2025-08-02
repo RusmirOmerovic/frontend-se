@@ -2,9 +2,11 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
 
+// Zeigt alle Meilensteine eines Projekts an
 const MilestoneList = ({ projectId }) => {
   const [milestones, setMilestones] = useState([]);
 
+  // Lädt Meilensteine beim Rendern oder Wechsel der Projekt-ID
   useEffect(() => {
     const fetchMilestones = async () => {
       const { data, error } = await supabase

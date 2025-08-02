@@ -2,9 +2,11 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
 
+// Startseite mit Begrüßung des eingeloggten Nutzers
 const Home = () => {
   const [profile, setProfile] = useState(null);
 
+  // Ruft den angemeldeten Nutzer ab und zeigt seinen Namen an
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (user) {

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { supabase } from "../supabaseClient";
 
+// Registrierungsseite mit zusätzlichen Profilfeldern
 const Register = () => {
   const [form, setForm] = useState({
     email: "",
@@ -14,10 +15,12 @@ const Register = () => {
   const [error, setError] = useState(null);
   const [confirmationMsg, setConfirmationMsg] = useState("");
 
+  // Aktualisiert den Formularzustand bei Eingaben
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  // Registriert den Nutzer und speichert Profildaten in Supabase
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);

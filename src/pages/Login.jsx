@@ -2,37 +2,41 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 
+// Login-Seite für bestehende Nutzer
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
+  // Meldet den Nutzer mit E-Mail und Passwort an
   const handleLogin = async (e) => {
-  e.preventDefault();
-  setMessage(""); // Reset vorherige Meldung
+    e.preventDefault();
+    setMessage("");
 
-  const { error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-  if (error) {
-    if (
-      error.message.includes("Email not confirmed") ||
-      error.message.includes("Email ist noch nicht bestätigt") // optional deutsch
-    ) {
-      setMessage("Bitte bestätige zuerst deine E-Mail-Adresse über den Link in deinem Posteingang.");
+    if (error) {
+      if (
+        error.message.includes("Email not confirmed") ||
+        error.message.includes("Email ist noch nicht bestätigt")
+      ) {
+        setMessage(
+          "Bitte bestätige zuerst deine E-Mail-Adresse über den Link in deinem Posteingang."
+        );
+      } else {
+        setMessage(error.message);
+      }
     } else {
-      setMessage(error.message);
+      setMessage("Login erfolgreich. Weiterleitung...");
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 1000);
     }
-  } else {
-    setMessage("Login erfolgreich. Weiterleitung...");
-    setTimeout(() => {
-      navigate("/dashboard");
-    }, 1000);
-  }
-};
+  };
 
 
   return (

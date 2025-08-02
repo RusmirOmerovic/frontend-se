@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 
+// Detailansicht eines Projekts mit Liste der Meilensteine
 const ProjectDetail = () => {
   const { id } = useParams(); // Projekt-ID aus der URL
   const [project, setProject] = useState(null);
   const [milestones, setMilestones] = useState([]);
 
+  // Lädt Projektinformationen und zugehörige Meilensteine
   useEffect(() => {
     const fetchProject = async () => {
       const { data, error } = await supabase
@@ -22,10 +24,10 @@ const ProjectDetail = () => {
       const { data, error } = await supabase
         .from("milestones")
         .select("*")
-        .eq("project_id", id) // ✅ wichtig: KEIN "s" am Ende
+        .eq("project_id", id)
         .order("due_date", { ascending: true });
 
-      console.log("Geladene Milestones:", data);  
+      console.log("Geladene Milestones:", data);
       if (!error) setMilestones(data);
     };
 

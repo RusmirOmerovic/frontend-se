@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { getUserRole } from '../getUserRole.js';
 import { supabase } from '../../supabaseClient.js';
 
+// Tests für getUserRole: prüft Erfolgs- und Fehlerpfad
 vi.mock('../../supabaseClient.js', () => ({
   supabase: {
     from: vi.fn(),

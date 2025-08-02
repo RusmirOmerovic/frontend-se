@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../supabaseClient";
 
+// Formular zur Erstellung oder Bearbeitung eines Projekts
 const ProjectForm = ({ user, onProjectSaved, project, onCancel }) => {
   const [name, setName] = useState(project?.name || "");
   const [status, setStatus] = useState(project?.status || "in Arbeit");
@@ -8,29 +9,31 @@ const ProjectForm = ({ user, onProjectSaved, project, onCancel }) => {
   const [meilensteine, setMeilensteine] = useState(project?.meilensteine || "");
   const [file, setFile] = useState(null);
 
+  // Lädt vorhandene Meilensteine, wenn ein Projekt bearbeitet wird
   useEffect(() => {
-  const fetchExistingMilestones = async () => {
-    if (!project?.id) return;
+    const fetchExistingMilestones = async () => {
+      if (!project?.id) return;
 
-    const { data, error } = await supabase
-      .from("milestones")
-      .select("title")
-      .eq("project_id", project.id);
+      const { data, error } = await supabase
+        .from("milestones")
+        .select("title")
+        .eq("project_id", project.id);
 
-    if (error) {
-      console.error("Fehler beim Laden vorhandener Meilensteine:", error.message);
-    } else {
-      const titles = data.map((m) => m.title).join(", ");
-      setMeilensteine(titles);
-    }
-  };
+      if (error) {
+        console.error("Fehler beim Laden vorhandener Meilensteine:", error.message);
+      } else {
+        const titles = data.map((m) => m.title).join(", ");
+        setMeilensteine(titles);
+      }
+    };
 
-  fetchExistingMilestones();
-}, [project?.id]);
+    fetchExistingMilestones();
+  }, [project?.id]);
 
+  // Speichert das Projekt und verarbeitet optional Dateien sowie Meilensteine
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     console.log("Projekt wird gespeichert mit owner_id:", user?.id);
 
     let projectId = project?.id;
@@ -44,9 +47,7 @@ const ProjectForm = ({ user, onProjectSaved, project, onCancel }) => {
     } else {
       const { data, error: insertErr } = await supabase
         .from("projects")
-        .insert([
-          { name, status, startdatum, owner_id: user.id },
-        ])
+        .insert([{ name, status, startdatum, owner_id: user.id }])
         .select()
         .single();
       error = insertErr;
@@ -58,6 +59,7 @@ const ProjectForm = ({ user, onProjectSaved, project, onCancel }) => {
       return;
     }
 
+    // Datei-Upload zum Projektbucket
     if (file && projectId) {
       const { error: uploadError } = await supabase.storage
         .from("project-files")
@@ -67,46 +69,47 @@ const ProjectForm = ({ user, onProjectSaved, project, onCancel }) => {
       }
     }
 
-        // ➊ Meilensteine verarbeiten und speichern
+    // Meilensteine verarbeiten und speichern
     if (meilensteine && projectId) {
       const msList = meilensteine
-        .split(/[\n,]+/) // nach Zeilenumbruch ODER Komma trennen
+        .split(/[\n,]+/)
         .map((title) => title.trim())
         .filter((title) => title.length > 0);
 
       const milestonesToInsert = msList.map((title) => ({
         project_id: projectId,
         title: title,
-        description: `Beschreibung zu ${title}`,  // Beispieltext
-        due_date: new Date().toISOString(),       // aktuelles Datum z.B. als Fälligkeitsdatum
+        description: `Beschreibung zu ${title}`,
+        due_date: new Date().toISOString(),
         status: "offen",
         completed: false,
       }));
 
-      // ➊.1 Alte Meilensteine löschen
-    const { error: deleteError } = await supabase
-      .from("milestones")
-      .delete()
-      .eq("project_id", projectId);
+      // Alte Meilensteine entfernen
+      const { error: deleteError } = await supabase
+        .from("milestones")
+        .delete()
+        .eq("project_id", projectId);
 
       if (deleteError) {
         console.error("Fehler beim Löschen alter Meilensteine:", deleteError.message);
       }
 
-      // ➊.2 Neue Meilensteine einfügen
+      // Neue Meilensteine einfügen
       if (milestonesToInsert.length > 0) {
-      const { error: insertError } = await supabase
-        .from("milestones")
-        .insert(milestonesToInsert);
+        const { error: insertError } = await supabase
+          .from("milestones")
+          .insert(milestonesToInsert);
 
         if (insertError) {
-          console.error("Fehler beim Einfügen neuer Meilensteine:", insertError.message);
+          console.error(
+            "Fehler beim Einfügen neuer Meilensteine:",
+            insertError.message
+          );
           alert("Fehler beim Speichern der Meilensteine: " + insertError.message);
-
         }
       }
     }
-
 
     setName("");
     setStatus("in Arbeit");
