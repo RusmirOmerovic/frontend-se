@@ -158,9 +158,43 @@ const Dashboard = () => {
 
   // Löscht ein Projekt samt zugehörigen Dateien
   const handleDeleteProject = async (id) => {
-    await supabase.from("projects").delete().eq("id", id);
-    await supabase.storage.from("project-files").remove([`project/${id}`]);
+    const { error: milestoneError } = await supabase
+      .from("milestones")
+      .delete()
+      .eq("project_id", id);
+    if (milestoneError) {
+      console.error(
+        "Fehler beim Löschen der Meilensteine:",
+        milestoneError.message
+      );
+    }
     fetchProjects();
+
+    const { error: commentError } = await supabase
+      .from("comments")
+      .delete()
+      .eq("project_id", id);
+    if (commentError) {
+      console.error(
+        "Fehler beim Löschen der Kommentare:",
+        commentError.message
+      );
+    }
+    fetchProjects();
+
+    const { error: projectError } = await supabase
+      .from("projects")
+      .delete()
+      .eq("id", id);
+    if (projectError) {
+      console.error(
+        "Fehler beim Löschen des Projekts:",
+        projectError.message
+      );
+    }
+    fetchProjects();
+
+    await supabase.storage.from("project-files").remove([`project/${id}`]);
   };
 
   return (
