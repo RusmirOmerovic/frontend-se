@@ -3,7 +3,7 @@ import { supabase } from "../supabaseClient";
 import ProjectForm from "../components/ProjectForm";
 import CommentsSection from "../components/CommentsSection";
 import ProfileEditor from "../components/ProfileEditor";
-
+import MilestoneList from "../components/MilestoneList";
 
 
 const Dashboard = () => {
@@ -13,34 +13,41 @@ const Dashboard = () => {
 
   // Rolle ermitteln oder bei Bedarf anlegen
   const assignRoleIfMissing = async (user) => {
-    const { data, error } = await supabase
+    const { data: existing, error } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", user.id)
       .maybeSingle();
+  // Wenn Rolle bereits existiert, setze sie
+    if (existing) {
+      setRole(existing.role);
+      return;
+    }
 
     if (error) {
       console.error("Fehler beim Abrufen der Rolle:", error.message);
       return;
     }
-
-    if (data) {
-      setRole(data.role);
-      return;
-    }
   //Wenn keine Rolle vorhanden ist, dann anlegen
     const newRole = user.email?.includes("@web.de") ? "tutor" : "student";
+
     const { error: insertError } = await supabase
       .from("user_roles")
       .insert([{ user_id: user.id, role: newRole }]);
 
     if (insertError) {
-      console.error("Fehler beim Rollen-Insert:", insertError.message);
+      if (insertError.code === "23505") {
+        // Duplikat-Fehler, Rolle existiert bereits
+        console.warn("Rolle existiert bereits, überspringe Insert:", insertError.message);
+      } else {
+        console.error("Fehler beim Rollen-Insert:", insertError.message);
+      }
     } else {
-      setRole(newRole);
+        setRole(newRole);
     }
   };
-
+  // Sicherheitsmechanismus einmal assingRoleIfMissing aufzurufen
+  const [roleChecked, setRoleChecked] = useState(false);
   // Session und Rolle holen
   useEffect(() => {
     const fetchSession = async () => {
@@ -56,11 +63,14 @@ const Dashboard = () => {
 
       const currentUser = session.user;
       setUser(currentUser);
-      await assignRoleIfMissing(currentUser);
+      if (!roleChecked) {
+        await assignRoleIfMissing(currentUser);
+        setRoleChecked(true);
+      }
     };
 
     fetchSession();
-  }, []);
+  }, [roleChecked]);
 
   // Projekte laden (für Studenten nur eigene)
   const fetchProjects = async () => {
