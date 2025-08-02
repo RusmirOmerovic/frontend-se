@@ -17,13 +17,13 @@ const ProjectForm = ({ user, onProjectSaved, project, onCancel }) => {
     if (projectId) {
       ({ error } = await supabase
         .from("projects")
-        .update({ name, status, startdatum, meilensteine })
+        .update({ name, status, startdatum })
         .eq("id", projectId));
     } else {
       const { data, error: insertErr } = await supabase
         .from("projects")
         .insert([
-          { name, status, startdatum, meilensteine, owner_id: user.id },
+          { name, status, startdatum, owner_id: user.id },
         ])
         .select()
         .single();
@@ -45,10 +45,34 @@ const ProjectForm = ({ user, onProjectSaved, project, onCancel }) => {
       }
     }
 
+        // ➊ Meilensteine verarbeiten und speichern
+    if (meilensteine && projectId) {
+      const msList = meilensteine
+        .split(/[\n,]+/) // nach Zeilenumbruch ODER Komma trennen
+        .map((title) => title.trim())
+        .filter((title) => title.length > 0);
+
+      const milestonesToInsert = msList.map((title) => ({
+        project_id: projectId,
+        title: title,
+        completed: false,
+      }));
+
+      if (milestonesToInsert.length > 0) {
+        const { error: msError } = await supabase
+          .from("milestones")
+          .insert(milestonesToInsert);
+
+        if (msError) {
+          alert("Fehler beim Speichern der Meilensteine: " + msError.message);
+        }
+      }
+    }
+
+
     setName("");
     setStatus("in Arbeit");
     setStartdatum("");
-    setMeilensteine("");
     setFile(null);
     if (onProjectSaved) onProjectSaved();
     if (onCancel) onCancel();
@@ -92,6 +116,10 @@ const ProjectForm = ({ user, onProjectSaved, project, onCancel }) => {
         placeholder="Meilensteine (z. B. Analyse, Prototyp, Test...)"
         className="w-full p-2 border rounded mb-3"
       />
+      <small className="text-gray-500">
+        Trenne Meilensteine mit Komma oder Zeilenumbruch (z. B. MS01, MS02, MS03...)
+      </small>
+
 
       <input
         type="file"

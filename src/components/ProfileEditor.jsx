@@ -1,14 +1,16 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
-
+// Formular zur Bearbeitung des Nutzerprofils
 const ProfileEditor = ({ user }) => {
   const [form, setForm] = useState({
     vorname: "",
     nachname: "",
     geburtsdatum: "",
     matrikelnummer: "",
+    passwort: "",
+    passwortBestätigen: "",
   });
-
+// Initialisiere das Formular mit den aktuellen Nutzerdaten
   useEffect(() => {
     const fetchProfile = async () => {
       const { data } = await supabase
@@ -22,7 +24,7 @@ const ProfileEditor = ({ user }) => {
 
     fetchProfile();
   }, [user]);
-
+// Handle Änderungen im Formular
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -36,6 +38,7 @@ const ProfileEditor = ({ user }) => {
         nachname: form.nachname,
         geburtsdatum: form.geburtsdatum,
         matrikelnummer: form.matrikelnummer,
+
       })
       .eq("id", user.id);
 
@@ -44,13 +47,34 @@ const ProfileEditor = ({ user }) => {
     } else {
       alert("Profil aktualisiert");
     }
+// Passwortänderung
+    if (form.passwort && form.passwort === form.passwortBestätigen) {
+      await updatePassword(form.passwort);
+    } else if (form.passwort || form.passwortBestätigen) {
+      alert("Passwörter stimmen nicht überein");
+    }
   };
+// Funktion zum Aktualisieren des Passworts 
+    const updatePassword = async (newPassword) => {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+    if (error) {
+    console.error("Fehler beim Ändern des Passworts:", error.message);
+    } else {
+        alert("Passwort erfolgreich geändert.");
+    }
+  };
+
+// Formular zur Bearbeitung des Profils
+
 
   return (
     <form onSubmit={handleSubmit} className="bg-white p-4 rounded shadow mt-4">
       <h2 className="text-lg font-semibold mb-2">🛠️ Profil bearbeiten</h2>
       <div className="space-y-2">
-        {["vorname", "nachname", "geburtsdatum", "matrikelnummer"].map(
+        {["vorname", "nachname", "geburtsdatum", "matrikelnummer", "passwort"].map(
           (field) => (
             <input
               key={field}
