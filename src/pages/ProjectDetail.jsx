@@ -22,7 +22,7 @@ const ProjectDetail = () => {
       const { data, error } = await supabase
         .from("milestones")
         .select("*")
-        .eq("projects_id", id)
+        .eq("project_id", id)
         .order("due_date", { ascending: true });
 
       if (!error) setMilestones(data);
