@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../supabaseClient";
+import { submitProject } from "../utils/projectSubmit";
 
 // Formular zur Erstellung oder Bearbeitung eines Projekts
 const ProjectForm = ({ user, onProjectSaved, project, onCancel }) => {
@@ -36,25 +37,17 @@ const ProjectForm = ({ user, onProjectSaved, project, onCancel }) => {
 
     console.log("Projekt wird gespeichert mit owner_id:", user?.id);
 
-    let projectId = project?.id;
-    let error;
-
-    if (projectId) {
-      ({ error } = await supabase
-        .from("projects")
-        .update({ name, status, startdatum })
-        .eq("id", projectId));
-    } else {
-      const { data, error: insertErr } = await supabase
-        .from("projects")
-        .insert([{ name, status, startdatum, owner_id: user.id }])
-        .select()
-        .single();
-      error = insertErr;
-      projectId = data?.id;
-    }
-
-    if (error) {
+    let projectId;
+    try {
+      projectId = await submitProject({
+        user,
+        project,
+        name,
+        status,
+        startdatum,
+        onProjectSaved,
+      });
+    } catch (error) {
       alert("❌ Fehler beim Speichern: " + error.message);
       return;
     }
@@ -115,7 +108,6 @@ const ProjectForm = ({ user, onProjectSaved, project, onCancel }) => {
     setStatus("in Arbeit");
     setStartdatum("");
     setFile(null);
-    if (onProjectSaved) onProjectSaved();
     if (onCancel) onCancel();
   };
 
