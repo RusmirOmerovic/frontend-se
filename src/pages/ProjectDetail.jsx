@@ -7,6 +7,9 @@ const ProjectDetail = () => {
   const [project, setProject] = useState(null);
   const [milestones, setMilestones] = useState([]);
 
+  // ✅ Zeigt die ID aus der URL in der Konsole
+  console.log("useParams().id:", id);
+
   useEffect(() => {
     const fetchProject = async () => {
       const { data, error } = await supabase
@@ -58,7 +61,9 @@ const ProjectDetail = () => {
                 <td className="p-2 border">{m.title}</td>
                 <td className="p-2 border">{m.description}</td>
                 <td className="p-2 border">
-                  {new Date(m.due_date).toLocaleDateString()}
+                  {m.due_date
+                    ? new Date(m.due_date).toLocaleDateString()
+                    : "-"}
                 </td>
                 <td className="p-2 border">{m.status}</td>
               </tr>
