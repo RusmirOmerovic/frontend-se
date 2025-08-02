@@ -1,6 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "../supabaseClient";
-import MilestoneList from "./MilestoneList";
 
 const ProjectForm = ({ user, onProjectSaved, project, onCancel }) => {
   const [name, setName] = useState(project?.name || "");
@@ -8,6 +7,26 @@ const ProjectForm = ({ user, onProjectSaved, project, onCancel }) => {
   const [startdatum, setStartdatum] = useState(project?.startdatum || "");
   const [meilensteine, setMeilensteine] = useState(project?.meilensteine || "");
   const [file, setFile] = useState(null);
+
+  useEffect(() => {
+  const fetchExistingMilestones = async () => {
+    if (!project?.id) return;
+
+    const { data, error } = await supabase
+      .from("milestones")
+      .select("title")
+      .eq("project_id", project.id);
+
+    if (error) {
+      console.error("Fehler beim Laden vorhandener Meilensteine:", error.message);
+    } else {
+      const titles = data.map((m) => m.title).join(", ");
+      setMeilensteine(titles);
+    }
+  };
+
+  fetchExistingMilestones();
+}, [project?.id]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -58,16 +77,32 @@ const ProjectForm = ({ user, onProjectSaved, project, onCancel }) => {
       const milestonesToInsert = msList.map((title) => ({
         project_id: projectId,
         title: title,
+        description: `Beschreibung zu ${title}`,  // Beispieltext
+        due_date: new Date().toISOString(),       // aktuelles Datum z.B. als Fälligkeitsdatum
+        status: "offen",
         completed: false,
       }));
 
-      if (milestonesToInsert.length > 0) {
-        const { error: msError } = await supabase
-          .from("milestones")
-          .insert(milestonesToInsert);
+      // ➊.1 Alte Meilensteine löschen
+    const { error: deleteError } = await supabase
+      .from("milestones")
+      .delete()
+      .eq("project_id", projectId);
 
-        if (msError) {
-          alert("Fehler beim Speichern der Meilensteine: " + msError.message);
+      if (deleteError) {
+        console.error("Fehler beim Löschen alter Meilensteine:", deleteError.message);
+      }
+
+      // ➊.2 Neue Meilensteine einfügen
+      if (milestonesToInsert.length > 0) {
+      const { error: insertError } = await supabase
+        .from("milestones")
+        .insert(milestonesToInsert);
+
+        if (insertError) {
+          console.error("Fehler beim Einfügen neuer Meilensteine:", insertError.message);
+          alert("Fehler beim Speichern der Meilensteine: " + insertError.message);
+
         }
       }
     }
