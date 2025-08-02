@@ -251,10 +251,12 @@ const Dashboard = () => {
               </p>
               <p>
                 <strong>🕓 Erstellt:</strong>{" "}
-                {new Date(proj.created_at).toLocaleString("de-DE", {
+                {proj.created_at
+                  ? new Date(proj.created_at).toLocaleString("de-DE", {
                   dateStyle: "short",
                   timeStyle: "short",
-                })}
+                  })
+                  : "Kein Datum verfügbar"}
               </p>
               <MilestoneList projectId={proj.id} />
               {role === "student" && proj.owner_id === user.id && (
