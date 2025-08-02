@@ -266,10 +266,9 @@ const Dashboard = () => {
         </ul>
       ) : (
         <div className="mt-4">
-          <p>Noch keine Projekte erstellt, starte jetzt mit deinem ersten Projekt!</p>
           <p>{role === "tutor"
             ? "Keine Projekte verfügbar. Studierende haben noch keine Projekte angelegt."
-            : "Keine aktuellen Projekte"}
+            : "Keine Projekte verfügbar. Du kannst jetzt dein erstes Projekt anlegen!"}
             </p>
             {user && !showForm && role === "student" && (
             <button
