@@ -117,7 +117,7 @@ const ProjectForm = ({ user, onProjectSaved, project, onCancel }) => {
         className="w-full p-2 border rounded mb-3"
       />
       <small className="text-gray-500">
-        Trenne Meilensteine mit Komma oder Zeilenumbruch (z. B. MS01, MS02, MS03...)
+        Trenne Meilensteine mit Komma oder Zeilenumbruch (z.B. MS01, MS02, MS03...)
       </small>
 
 

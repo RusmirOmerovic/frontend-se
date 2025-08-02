@@ -241,6 +241,7 @@ const Dashboard = () => {
                   timeStyle: "short",
                 })}
               </p>
+              <MilestoneList projectId={proj.id} />
               {role === "student" && proj.owner_id === user.id && (
                 <div className="mt-2 space-x-2">
                   <button
@@ -265,8 +266,12 @@ const Dashboard = () => {
         </ul>
       ) : (
         <div className="mt-4">
-          <p>Keine aktuellen Projekte</p>
-          {user && !showForm && role === "student" && (
+          <p>Noch keine Projekte erstellt, starte jetzt mit deinem ersten Projekt!</p>
+          <p>{role === "tutor"
+            ? "Keine Projekte verfügbar. Studierende haben noch keine Projekte angelegt."
+            : "Keine aktuellen Projekte"}
+            </p>
+            {user && !showForm && role === "student" && (
             <button
               onClick={handleNew}
               className="mt-2 px-4 py-2 bg-blue-600 text-white rounded"
