@@ -64,13 +64,7 @@ const ProjectForm = ({ user, onProjectSaved, project, onCancel }) => {
       if (milestonesToInsert.length > 0) {
         const { error: msError } = await supabase
           .from("milestones")
-          .insert([[
-            {
-              project_id: projectId,
-              title: "MS01",
-              completed: false,
-            },
-          ]]);
+          .insert(milestonesToInsert);
 
         if (msError) {
           alert("Fehler beim Speichern der Meilensteine: " + msError.message);
