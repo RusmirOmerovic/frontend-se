@@ -25,6 +25,8 @@ const ProjectDetail = () => {
         .eq("project_id", id)
         .order("due_date", { ascending: true });
 
+      console.log("Geladene Milestones:", data);  
+
       if (!error) setMilestones(data);
     };
 
