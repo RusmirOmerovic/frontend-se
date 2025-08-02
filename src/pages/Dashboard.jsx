@@ -13,17 +13,21 @@ const Dashboard = () => {
 
   // Rolle ermitteln oder bei Bedarf anlegen
   const assignRoleIfMissing = async (user) => {
-    const { data: existing } = await supabase
+    const { data, error } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", user.id)
-      .single();
 
-    if (existing) {
-      setRole(existing.role);
+    if (error) {
+      console.error("Fehler beim Abrufen der Rolle:", error.message);
       return;
     }
 
+    if (data.length > 0) {
+      setRole(data[0].role);
+      return;
+    }
+  //Wenn keine Rolle vorhanden ist, dann anlegen
     const newRole = user.email?.includes("@web.de") ? "tutor" : "student";
     const { error: insertError } = await supabase
       .from("user_roles")
