@@ -100,20 +100,41 @@ const Dashboard = () => {
   const handleDeleteAccount = async () => {
     if (!user?.id) return;
 
-    // 1. Projekte löschen
+    // Projekte des Nutzers ermitteln
+    const { data: userProjects } = await supabase
+      .from("projects")
+      .select("id")
+      .eq("owner_id", user.id);
+    const projectIds = userProjects?.map((p) => p.id) || [];
+
+    // Kommentare löschen
+    await supabase.from("comments").delete().eq("user_id", user.id);
+
+    // Kommentare und Meilensteine zu eigenen Projekten löschen
+    if (projectIds.length > 0) {
+      await supabase.from("comments").delete().in("project_id", projectIds);
+      await supabase.from("milestones").delete().in("project_id", projectIds);
+    }
+
+    // Projekte löschen
     await supabase.from("projects").delete().eq("owner_id", user.id);
 
-    // 2. Dateien löschen (nur falls du Bucket hast)
+    // Dateien löschen (nur falls du Bucket hast)
     await supabase.storage.from("project-files").remove([`user/${user.id}/`]);
 
-    // 3. user_roles löschen
+    // user_roles löschen
     await supabase.from("user_roles").delete().eq("user_id", user.id);
 
-    // 4. user_profiles löschen
+    // user_profiles löschen
     await supabase.from("user_profiles").delete().eq("id", user.id);
 
-    // 5. Benutzer-Session invalidieren (Löschen geht nur mit Service Key!)
-    alert("Account-Inhalte gelöscht. Benutzer muss manuell aus Supabase entfernt werden.");
+    // Nutzer über Server-Side Endpoint vollständig löschen
+    await fetch("/api/deleteUser", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: user.id }),
+    });
+
     await supabase.auth.signOut();
     window.location.href = "/";
   };
