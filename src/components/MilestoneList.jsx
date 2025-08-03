@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
 
 // Löscht einen Meilenstein
+// eslint-disable-next-line react-refresh/only-export-components
 export const removeMilestone = async (id) => {
   const { error } = await supabase.from("milestones").delete().eq("id", id);
   if (error) {
