@@ -59,7 +59,7 @@ const ProjectForm = ({ user, onProjectSaved, project, onCancel }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log("Projekt wird gespeichert mit owner_id:", user?.id);
+    // Debugausgabe für die Entwicklung bei Bedarf hier einfügen
 
     let projectId;
     try {
