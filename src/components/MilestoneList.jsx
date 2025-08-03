@@ -1,7 +1,8 @@
 /* eslint-disable react-refresh/only-export-components */
 // src/components/MilestoneList.jsx
-import { useEffect, useState } from "react";
+import { useEffect, useState, Fragment } from "react";
 import { supabase } from "../supabaseClient";
+import MilestoneFiles from "./MilestoneFiles.jsx";
 
 // Löscht einen Meilenstein
 // eslint-disable-next-line react-refresh/only-export-components
@@ -80,28 +81,35 @@ const MilestoneList = ({ projectId }) => {
       </thead>
       <tbody>
         {milestones.map((m) => (
-          <tr key={m.id}>
-            <td className="p-2 border">{m.title}</td>
-            <td className="p-2 border">{m.description}</td>
-            <td className="p-2 border">
-              {m.due_date ? new Date(m.due_date).toLocaleDateString() : "-"}
-            </td>
-            <td className="p-2 border">{m.status}</td>
-            <td className="p-2 border space-x-2">
-              <button
-                className="text-blue-600 underline"
-                onClick={() => handleEdit(m)}
-              >
-                Bearbeiten
-              </button>
-              <button
-                className="text-red-600 underline"
-                onClick={() => handleDelete(m.id)}
-              >
-                Löschen
-              </button>
-            </td>
-          </tr>
+          <Fragment key={m.id}>
+            <tr>
+              <td className="p-2 border">{m.title}</td>
+              <td className="p-2 border">{m.description}</td>
+              <td className="p-2 border">
+                {m.due_date ? new Date(m.due_date).toLocaleDateString() : "-"}
+              </td>
+              <td className="p-2 border">{m.status}</td>
+              <td className="p-2 border space-x-2">
+                <button
+                  className="text-blue-600 underline"
+                  onClick={() => handleEdit(m)}
+                >
+                  Bearbeiten
+                </button>
+                <button
+                  className="text-red-600 underline"
+                  onClick={() => handleDelete(m.id)}
+                >
+                  Löschen
+                </button>
+              </td>
+            </tr>
+            <tr>
+              <td colSpan="5" className="p-2 border bg-gray-50">
+                <MilestoneFiles projectId={projectId} milestoneId={m.id} />
+              </td>
+            </tr>
+          </Fragment>
         ))}
       </tbody>
     </table>

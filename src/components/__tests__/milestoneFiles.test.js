@@ -88,12 +88,13 @@ describe('MilestoneFiles', () => {
   });
 
   it('renders uploaded files with delete buttons', async () => {
+    const projectId = 1;
     const milestoneId = 1;
     const testFiles = [{ name: 'a.txt' }, { name: 'b.txt' }];
 
-    const bucket = supabase.storage.from('milestone-files');
+    const bucket = supabase.storage.from('project-files');
     for (const file of testFiles) {
-      const path = `milestone/${milestoneId}/${file.name}`;
+      const path = `project/${projectId}/milestone/${milestoneId}/${file.name}`;
       await bucket.upload(path, file);
       await supabase
         .from('milestone_files')
@@ -108,7 +109,7 @@ describe('MilestoneFiles', () => {
     useEffect.mockImplementation(() => {});
 
     const html = renderToString(
-      React.createElement(MilestoneFiles, { milestoneId })
+      React.createElement(MilestoneFiles, { projectId, milestoneId })
     );
 
     testFiles.forEach((file) => {
