@@ -1,8 +1,8 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "../supabaseClient";
 
-// Zeigt alle gespeicherten Dateien eines Meilensteins an
-const MilestoneFiles = ({ milestoneId }) => {
+// Zeigt alle gespeicherten Dateien eines Meilensteins an und erlaubt Uploads
+const MilestoneFiles = ({ projectId, milestoneId }) => {
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -26,9 +26,34 @@ const MilestoneFiles = ({ milestoneId }) => {
     fetchFiles();
   }, [fetchFiles]);
 
+  const handleUpload = async (e) => {
+    const selectedFiles = Array.from(e.target.files || []);
+    for (const file of selectedFiles) {
+      const path = `project/${projectId}/milestone/${milestoneId}/${file.name}`;
+      const { error: uploadError } = await supabase.storage
+        .from("project-files")
+        .upload(path, file);
+      if (uploadError) {
+        console.error("Fehler beim Upload der Datei:", uploadError.message);
+        continue;
+      }
+      const { error: insertError } = await supabase
+        .from("milestone_files")
+        .insert({ milestone_id: milestoneId, path, name: file.name });
+      if (insertError) {
+        console.error(
+          "Fehler beim Speichern der Datei in der Datenbank:",
+          insertError.message
+        );
+      }
+    }
+    e.target.value = "";
+    fetchFiles();
+  };
+
   const handleDelete = async (file) => {
     const { error: storageError } = await supabase.storage
-      .from("milestone-files")
+      .from("project-files")
       .remove([file.path]);
 
     if (storageError) {
@@ -53,13 +78,19 @@ const MilestoneFiles = ({ milestoneId }) => {
   return (
     <div className="mt-6">
       <h2 className="text-lg font-semibold mb-2">📂 Meilensteindateien</h2>
+      <input
+        type="file"
+        multiple
+        onChange={handleUpload}
+        className="mb-2"
+      />
       {files.length === 0 && <p>Keine Dateien vorhanden.</p>}
       <ul>
         {files.map((file) => {
           const {
             data: { publicUrl },
           } = supabase.storage
-            .from("milestone-files")
+            .from("project-files")
             .getPublicUrl(file.path);
 
           return (
