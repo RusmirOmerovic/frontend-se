@@ -180,7 +180,34 @@ const Dashboard = () => {
   // Löscht ein Projekt samt zugehörigen Dateien
   const handleDeleteProject = async (id) => {
     await supabase.from("projects").delete().eq("id", id);
-    await supabase.storage.from("project-files").remove([`project/${id}`]);
+
+    const { data: files, error: listError } = await supabase
+      .storage
+      .from("project-files")
+      .list(`project/${id}`);
+
+    if (listError) {
+      console.error(
+        "Fehler beim Auflisten der Dateien:",
+        listError.message,
+      );
+    } else if (files && files.length > 0) {
+      const paths = files.map((file) => `project/${id}/${file.name}`);
+      const { error: removeError } = await supabase
+        .storage
+        .from("project-files")
+        .remove(paths);
+
+      if (removeError) {
+        console.error(
+          "Fehler beim Löschen der Dateien:",
+          removeError.message,
+        );
+      }
+    } else {
+      console.warn(`Keine Dateien zum Löschen für Projekt ${id}.`);
+    }
+
     fetchProjects();
   };
 
