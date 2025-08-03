@@ -9,7 +9,7 @@ const ProjectForm = ({ user, onProjectSaved, project, onCancel }) => {
   const [startdatum, setStartdatum] = useState(project?.startdatum || "");
   const [milestones, setMilestones] = useState([]);
   const [deletedMilestoneIds, setDeletedMilestoneIds] = useState([]);
-  const [file, setFile] = useState(null);
+  const [files, setFiles] = useState([]);
 
   // Lädt vorhandene Meilensteine, wenn ein Projekt bearbeitet wird
   useEffect(() => {
@@ -77,12 +77,21 @@ const ProjectForm = ({ user, onProjectSaved, project, onCancel }) => {
     }
 
     // Datei-Upload zum Projektbucket
-    if (file && projectId) {
-      const { error: uploadError } = await supabase.storage
-        .from("project-files")
-        .upload(`project/${projectId}/${file.name}`, file, { upsert: true });
-      if (uploadError) {
-        alert("Fehler beim Datei-Upload: " + uploadError.message);
+    if (files.length > 0 && projectId) {
+      for (const file of files) {
+        const { error: uploadError } = await supabase.storage
+          .from("project-files")
+          .upload(`project/${projectId}/${file.name}`, file, { upsert: true });
+        if (uploadError) {
+          alert("Fehler beim Datei-Upload: " + uploadError.message);
+        } else {
+          await supabase.from("project_files").insert({
+            project_id: projectId,
+            path: `project/${projectId}/${file.name}`,
+            name: file.name,
+            uploaded_at: new Date().toISOString(),
+          });
+        }
       }
     }
 
@@ -128,7 +137,7 @@ const ProjectForm = ({ user, onProjectSaved, project, onCancel }) => {
     setName("");
     setStatus("in Arbeit");
     setStartdatum("");
-    setFile(null);
+    setFiles([]);
     setMilestones([]);
     setDeletedMilestoneIds([]);
     if (onCancel) onCancel();
@@ -204,7 +213,9 @@ const ProjectForm = ({ user, onProjectSaved, project, onCancel }) => {
 
       <input
         type="file"
-        onChange={(e) => setFile(e.target.files[0])}
+        multiple
+        accept="application/pdf,video/mp4,application/zip,image/*"
+        onChange={(e) => setFiles(Array.from(e.target.files))}
         className="mb-3"
       />
 
