@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const addComment = async (projectId, userId, content) => {
   const { error } = await supabase
     .from("comments")
@@ -28,7 +29,7 @@ const CommentsSection = ({ projectId, user }) => {
         setComments(data);
         setFeedback(null);
       }
-    } catch (err) {
+    } catch {
       setFeedback({ type: "error", text: "Fehler beim Laden der Kommentare" });
     }
   };
@@ -58,7 +59,7 @@ const CommentsSection = ({ projectId, user }) => {
       setText("");
       setFeedback({ type: "success", text: "Kommentar gespeichert" });
       fetchComments();
-    } catch (err) {
+    } catch {
       setFeedback({ type: "error", text: "Fehler beim Speichern des Kommentars" });
     }
   };
