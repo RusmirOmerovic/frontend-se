@@ -7,7 +7,8 @@ const ProjectForm = ({ user, onProjectSaved, project, onCancel }) => {
   const [name, setName] = useState(project?.name || "");
   const [status, setStatus] = useState(project?.status || "in Arbeit");
   const [startdatum, setStartdatum] = useState(project?.startdatum || "");
-  const [meilensteine, setMeilensteine] = useState(project?.meilensteine || "");
+  const [milestones, setMilestones] = useState([]);
+  const [deletedMilestoneIds, setDeletedMilestoneIds] = useState([]);
   const [file, setFile] = useState(null);
 
   // Lädt vorhandene Meilensteine, wenn ein Projekt bearbeitet wird
@@ -17,19 +18,42 @@ const ProjectForm = ({ user, onProjectSaved, project, onCancel }) => {
 
       const { data, error } = await supabase
         .from("milestones")
-        .select("title")
+        .select("id, title")
         .eq("project_id", project.id);
 
       if (error) {
         console.error("Fehler beim Laden vorhandener Meilensteine:", error.message);
       } else {
-        const titles = data.map((m) => m.title).join(", ");
-        setMeilensteine(titles);
+        setMilestones(data);
       }
     };
 
     fetchExistingMilestones();
   }, [project?.id]);
+
+  const handleAddMilestone = () => {
+    const title = prompt("Titel des Meilensteins");
+    if (title) {
+      setMilestones([...milestones, { title }]);
+    }
+  };
+
+  const handleEditMilestone = (index) => {
+    const title = prompt("Neuer Titel", milestones[index].title);
+    if (title) {
+      setMilestones(
+        milestones.map((m, i) => (i === index ? { ...m, title } : m))
+      );
+    }
+  };
+
+  const handleDeleteMilestone = (index) => {
+    const m = milestones[index];
+    if (m.id) {
+      setDeletedMilestoneIds([...deletedMilestoneIds, m.id]);
+    }
+    setMilestones(milestones.filter((_, i) => i !== index));
+  };
 
   // Speichert das Projekt und verarbeitet optional Dateien sowie Meilensteine
   const handleSubmit = async (e) => {
@@ -63,43 +87,40 @@ const ProjectForm = ({ user, onProjectSaved, project, onCancel }) => {
     }
 
     // Meilensteine verarbeiten und speichern
-    if (meilensteine && projectId) {
-      const msList = meilensteine
-        .split(/[\n,]+/)
-        .map((title) => title.trim())
-        .filter((title) => title.length > 0);
-
-      const milestonesToInsert = msList.map((title) => ({
-        project_id: projectId,
-        title: title,
-        description: `Beschreibung zu ${title}`,
-        due_date: new Date().toISOString(),
-        status: "offen",
-        completed: false,
-      }));
-
-      // Alte Meilensteine entfernen
-      const { error: deleteError } = await supabase
-        .from("milestones")
-        .delete()
-        .eq("project_id", projectId);
-
-      if (deleteError) {
-        console.error("Fehler beim Löschen alter Meilensteine:", deleteError.message);
+    if (projectId) {
+      for (const m of milestones) {
+        if (m.id) {
+          const { error } = await supabase
+            .from("milestones")
+            .update({ title: m.title })
+            .eq("id", m.id);
+          if (error) {
+            console.error("Fehler beim Aktualisieren eines Meilensteins:", error.message);
+          }
+        } else {
+          const { error } = await supabase
+            .from("milestones")
+            .insert({
+              project_id: projectId,
+              title: m.title,
+              description: `Beschreibung zu ${m.title}`,
+              due_date: new Date().toISOString(),
+              status: "offen",
+              completed: false,
+            });
+          if (error) {
+            console.error("Fehler beim Einfügen eines Meilensteins:", error.message);
+          }
+        }
       }
 
-      // Neue Meilensteine einfügen
-      if (milestonesToInsert.length > 0) {
-        const { error: insertError } = await supabase
+      if (deletedMilestoneIds.length > 0) {
+        const { error } = await supabase
           .from("milestones")
-          .insert(milestonesToInsert);
-
-        if (insertError) {
-          console.error(
-            "Fehler beim Einfügen neuer Meilensteine:",
-            insertError.message
-          );
-          alert("Fehler beim Speichern der Meilensteine: " + insertError.message);
+          .delete()
+          .in("id", deletedMilestoneIds);
+        if (error) {
+          console.error("Fehler beim Löschen von Meilensteinen:", error.message);
         }
       }
     }
@@ -108,6 +129,8 @@ const ProjectForm = ({ user, onProjectSaved, project, onCancel }) => {
     setStatus("in Arbeit");
     setStartdatum("");
     setFile(null);
+    setMilestones([]);
+    setDeletedMilestoneIds([]);
     if (onCancel) onCancel();
   };
 
@@ -143,16 +166,41 @@ const ProjectForm = ({ user, onProjectSaved, project, onCancel }) => {
         <option value="abgeschlossen">abgeschlossen</option>
       </select>
 
-      <textarea
-        value={meilensteine}
-        onChange={(e) => setMeilensteine(e.target.value)}
-        placeholder="Meilensteine (z. B. Analyse, Prototyp, Test...)"
-        className="w-full p-2 border rounded mb-3"
-      />
-      <small className="text-gray-500">
-        Trenne Meilensteine mit Komma oder Zeilenumbruch (z.B. MS01, MS02, MS03...)
-      </small>
-
+      <div className="mb-3">
+        <ul className="mb-2">
+          {milestones.map((m, index) => (
+            <li
+              key={m.id ?? index}
+              className="flex items-center justify-between mb-1"
+            >
+              <span>{m.title}</span>
+              <div className="space-x-2">
+                <button
+                  type="button"
+                  className="text-blue-600 underline"
+                  onClick={() => handleEditMilestone(index)}
+                >
+                  Bearbeiten
+                </button>
+                <button
+                  type="button"
+                  className="text-red-600 underline"
+                  onClick={() => handleDeleteMilestone(index)}
+                >
+                  Löschen
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+        <button
+          type="button"
+          onClick={handleAddMilestone}
+          className="bg-gray-200 px-2 py-1 rounded"
+        >
+          Meilenstein hinzufügen
+        </button>
+      </div>
 
       <input
         type="file"
