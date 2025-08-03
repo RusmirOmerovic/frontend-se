@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
+import { updatePassword } from "../utils/updatePassword";
 
 // Formular-Komponente zum Bearbeiten der Profildaten eines Nutzers
 const ProfileEditor = ({ user }) => {
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     vorname: "",
     nachname: "",
@@ -52,22 +55,9 @@ const ProfileEditor = ({ user }) => {
     }
 
     if (form.passwort && form.passwort === form.passwortBestätigen) {
-      await updatePassword(form.passwort);
+      await updatePassword(form.passwort, navigate);
     } else if (form.passwort || form.passwortBestätigen) {
       alert("Passwörter stimmen nicht überein");
-    }
-  };
-
-  // Setzt ein neues Passwort für den angemeldeten Nutzer
-  const updatePassword = async (newPassword) => {
-    const { error } = await supabase.auth.updateUser({
-      password: newPassword,
-    });
-
-    if (error) {
-      console.error("Fehler beim Ändern des Passworts:", error.message);
-    } else {
-      alert("Passwort erfolgreich geändert.");
     }
   };
 
