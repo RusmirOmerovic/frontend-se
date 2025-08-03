@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 import MilestoneList from "../components/MilestoneList";
+import CommentsSection from "../components/CommentsSection";
 
 // Erstellt oder aktualisiert einen Meilenstein
 // eslint-disable-next-line react-refresh/only-export-components
@@ -46,6 +47,14 @@ export const addOrUpdateMilestone = async (projectId, milestone) => {
 const ProjectDetail = () => {
   const { id } = useParams(); // Projekt-ID aus der URL
   const [project, setProject] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
+
+  // Holt eingeloggten Nutzer
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setCurrentUser(user);
+    });
+  }, []);
 
   // Lädt Projektinformationen
   useEffect(() => {
@@ -70,6 +79,10 @@ const ProjectDetail = () => {
 
       <h2 className="text-lg font-semibold mt-6 mb-2">📍 Meilensteine</h2>
       <MilestoneList projectId={id} />
+
+      {currentUser && (
+        <CommentsSection projectId={id} user={currentUser} />
+      )}
 
       <Link to="/dashboard" className="text-blue-600 underline mt-6 inline-block">
         🔙 Zurück zum Dashboard
