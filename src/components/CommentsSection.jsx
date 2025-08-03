@@ -1,20 +1,36 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
 
+export const addComment = async (projectId, userId, content) => {
+  const { error } = await supabase
+    .from("comments")
+    .insert([{ project_id: projectId, user_id: userId, content }]);
+  if (error) throw error;
+};
+
 // Komponente zur Anzeige und Erstellung von Projektkommentaren
 const CommentsSection = ({ projectId, user }) => {
   const [comments, setComments] = useState([]);
   const [text, setText] = useState("");
   const [ownerId, setOwnerId] = useState(null);
+  const [feedback, setFeedback] = useState(null);
 
   // Lädt alle Kommentare für das angegebene Projekt
   const fetchComments = async () => {
-    const { data } = await supabase
-      .from("comments")
-      .select("*, user_profiles(vorname, nachname)")
-      .eq("project_id", projectId)
-      .order("created_at", { ascending: false });
-    if (data) setComments(data);
+    try {
+      const { data, error } = await supabase
+        .from("comments")
+        .select("*, user_profiles(vorname, nachname)")
+        .eq("project_id", projectId)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      if (data) {
+        setComments(data);
+        setFeedback(null);
+      }
+    } catch (err) {
+      setFeedback({ type: "error", text: "Fehler beim Laden der Kommentare" });
+    }
   };
 
   // Holt Besitzer des Projekts
@@ -37,11 +53,14 @@ const CommentsSection = ({ projectId, user }) => {
   // Fügt einen neuen Kommentar hinzu und lädt anschließend die Liste neu
   const handleAdd = async () => {
     if (!text.trim()) return;
-    await supabase
-      .from("comments")
-      .insert([{ project_id: projectId, user_id: user.id, content: text }]);
-    setText("");
-    fetchComments();
+    try {
+      await addComment(projectId, user.id, text);
+      setText("");
+      setFeedback({ type: "success", text: "Kommentar gespeichert" });
+      fetchComments();
+    } catch (err) {
+      setFeedback({ type: "error", text: "Fehler beim Speichern des Kommentars" });
+    }
   };
 
   // Löscht einen Kommentar und aktualisiert die Liste
@@ -84,6 +103,13 @@ const CommentsSection = ({ projectId, user }) => {
       >
         Kommentar speichern
       </button>
+      {feedback && (
+        <p
+          className={`text-sm mt-1 ${feedback.type === "error" ? "text-red-600" : "text-green-600"}`}
+        >
+          {feedback.text}
+        </p>
+      )}
     </div>
   );
 };
