@@ -4,6 +4,7 @@ import { supabase } from "../supabaseClient";
 import MilestoneList from "../components/MilestoneList";
 
 // Erstellt oder aktualisiert einen Meilenstein
+// eslint-disable-next-line react-refresh/only-export-components
 export const addOrUpdateMilestone = async (projectId, milestone) => {
   const payload = {
     title: milestone.title,
