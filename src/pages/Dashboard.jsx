@@ -330,7 +330,7 @@ const handleDeleteAccount = async () => {
                   })
                   : "Kein Datum verfügbar"}
               </p>
-              <MilestoneList projectId={proj.id} />
+              {/* <MilestoneList projectId={proj.id} />  Meilenstein-Dateien anzeigen optional, da in Detailansicht bereits vorhanden*/}
               {role === "student" && proj.owner_id === user.id && (
                 <div className="mt-2 space-x-2">
                   <button

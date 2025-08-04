@@ -16,7 +16,7 @@ export const removeMilestone = async (id) => {
 };
 
 // Zeigt alle Meilensteine eines Projekts an
-const MilestoneList = ({ projectId }) => {
+const MilestoneList = ({ projectId, role, user, ownerId }) => {
   const [milestones, setMilestones] = useState([]);
 
   // Lädt Meilensteine beim Rendern oder Wechsel der Projekt-ID
@@ -90,18 +90,25 @@ const MilestoneList = ({ projectId }) => {
               </td>
               <td className="p-2 border">{m.status}</td>
               <td className="p-2 border space-x-2">
-                <button
-                  className="text-blue-600 underline"
-                  onClick={() => handleEdit(m)}
-                >
-                  Bearbeiten
-                </button>
-                <button
-                  className="text-red-600 underline"
-                  onClick={() => handleDelete(m.id)}
-                >
-                  Löschen
-                </button>
+        {role === "student" && user.id === ownerId && (
+        <>
+          <button
+            className="text-blue-600 underline"
+            onClick={() => handleEdit(m)}
+          >
+            Bearbeiten
+          </button>
+          <button
+            className="text-red-600 underline"
+            onClick={() => handleDelete(m.id)}
+          >
+            Löschen
+          </button>
+        </>
+      )}
+      
+
+                
               </td>
             </tr>
             <tr>
