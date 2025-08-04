@@ -210,7 +210,8 @@ const ProjectForm = ({ user, onProjectSaved, project, onCancel }) => {
           Meilenstein hinzufügen
         </button>
       </div>
-      // Optionaler Datei-Upload, da in Meilensteinen integriert
+      <p className="text-green-500">Dateien können in den jeweiligen Meilensteinen hochgeladen werden.</p>
+      {/* Optionaler Datei-Upload, da in Meilensteinen integriert */}
       {/* <input
         type="file"
         multiple
