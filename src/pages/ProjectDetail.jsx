@@ -82,7 +82,8 @@ const ProjectDetail = () => {
       <h2 className="text-lg font-semibold mt-6 mb-2">📍 Meilensteine</h2>
       <MilestoneList projectId={id} />
 
-      <ProjectFiles projectId={id} />
+      {/* hier unterhalb könnten Projektdateien angezeigt werden */}
+      {/* <ProjectFiles projectId={id} /> */}
 
       {currentUser && (
         <CommentsSection projectId={id} user={currentUser} />
