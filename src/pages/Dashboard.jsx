@@ -369,7 +369,6 @@ const handleDeleteAccount = async () => {
           )}
         </div>
       )}
-      {user && <ProfileEditor user={user} />}
     </div>
   );
 };
