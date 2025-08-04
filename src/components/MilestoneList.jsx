@@ -5,7 +5,7 @@ import { supabase } from "../supabaseClient";
 import MilestoneFiles from "./MilestoneFiles.jsx";
 
 // Löscht einen Meilenstein
-// eslint-disable-next-line react-refresh/only-export-components
+/// eslint-disable-next-line react-refresh/only-export-components
 export const removeMilestone = async (id) => {
   const { error } = await supabase.from("milestones").delete().eq("id", id);
   if (error) {
@@ -16,7 +16,7 @@ export const removeMilestone = async (id) => {
 };
 
 // Zeigt alle Meilensteine eines Projekts an
-const MilestoneList = ({ projectId, role, user, ownerId }) => {
+const MilestoneList = ({ projectId, user, ownerId, role }) => {
   const [milestones, setMilestones] = useState([]);
 
   // Lädt Meilensteine beim Rendern oder Wechsel der Projekt-ID

@@ -7,7 +7,7 @@ import CommentsSection from "../components/CommentsSection";
 import ProjectFiles from "../components/ProjectFiles";
 
 // Erstellt oder aktualisiert einen Meilenstein
-// eslint-disable-next-line react-refresh/only-export-components
+/// eslint-disable-next-line react-refresh/only-export-components
 export const addOrUpdateMilestone = async (projectId, milestone) => {
   const payload = {
     title: milestone.title,
@@ -80,7 +80,12 @@ const ProjectDetail = () => {
       <h1 className="text-2xl font-bold mb-2">{project.name}</h1>
 
       <h2 className="text-lg font-semibold mt-6 mb-2">📍 Meilensteine</h2>
-      <MilestoneList projectId={id} />
+      <MilestoneList 
+        projectId={id}
+        user={project.user}
+        ownerId={project.ownerId}
+        role={project.role}
+        />
 
       {/* hier unterhalb könnten Projektdateien angezeigt werden */}
       {/* <ProjectFiles projectId={id} /> */}
