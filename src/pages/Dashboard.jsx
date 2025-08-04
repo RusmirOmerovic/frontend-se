@@ -136,6 +136,7 @@ const Dashboard = () => {
     });
 
     await supabase.auth.signOut();
+    alert("✅ Ihr Account wurde vollständig aus dem System entfernt.");
     window.location.href = "/";
   };
 
