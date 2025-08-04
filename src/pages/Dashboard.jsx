@@ -97,13 +97,12 @@ const Dashboard = () => {
   }, [role, user]);
 
   // Entfernt alle eigenen Daten des Nutzers und meldet ihn ab
-  const handleDeleteAccount = async () => {
+const handleDeleteAccount = async () => {
   if (!user?.id) return;
-
   const userId = user.id;
 
   try {
-    // 1. Lösche Daten aus Datenbank (Tabellen, Storage)
+    // 🔁 1. Lösche Daten aus Datenbank (RLS basiert auf auth.uid())
     const { data: userProjects } = await supabase
       .from("projects")
       .select("id")
@@ -123,11 +122,11 @@ const Dashboard = () => {
       supabase.from("user_profiles").delete().eq("id", userId),
     ]);
 
-    // 2. Authentifizierten User über Server löschen
+    // ✅ 2. Auth-User löschen (admin-Zugriff auf Server)
     const response = await fetch("/api/deleteUser", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId: user.id }),
+      body: JSON.stringify({ userId }),
     });
 
     if (!response.ok) {
@@ -136,10 +135,10 @@ const Dashboard = () => {
       return;
     }
 
-    // 3. Jetzt sicher abmelden (Session zerstören)
+    // 🚪 3. Abmelden
     await supabase.auth.signOut();
 
-    // 4. Weiterleitung
+    // ✅ 4. Weiterleitung
     alert("✅ Ihr Account wurde vollständig gelöscht.");
     window.location.href = "/";
   } catch (err) {
@@ -147,6 +146,7 @@ const Dashboard = () => {
     alert("❌ Es gab ein Problem beim Löschen. Bitte erneut versuchen.");
   }
 };
+
 
 
   // Profilzustand und Formularsteuerung
