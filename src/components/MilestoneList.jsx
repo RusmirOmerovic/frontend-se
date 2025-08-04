@@ -91,7 +91,7 @@ const MilestoneList = ({ projectId, user, ownerId, role }) => {
               <td className="p-2 border">{m.status}</td>
               <td className="p-2 border space-x-2">
         {role === "student" && user.id === ownerId && (
-        <>
+        <div className="flex space-x-2">
           <button
             className="text-blue-600 underline"
             onClick={() => handleEdit(m)}
@@ -104,7 +104,7 @@ const MilestoneList = ({ projectId, user, ownerId, role }) => {
           >
             Löschen
           </button>
-        </>
+        </div>
       )}
       
 

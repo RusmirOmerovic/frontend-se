@@ -81,10 +81,10 @@ const ProjectDetail = () => {
 
       <h2 className="text-lg font-semibold mt-6 mb-2">📍 Meilensteine</h2>
       <MilestoneList 
-        projectId={id}
-        user={project.user}
+        projectId={project.id}
+        user={currentUser}
         ownerId={project.ownerId}
-        role={project.role}
+        role={project.owner_id === currentUser?.id ? "student" : "tutor"}
         />
 
       {/* hier unterhalb könnten Projektdateien angezeigt werden */}
