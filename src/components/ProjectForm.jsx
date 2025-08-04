@@ -210,14 +210,14 @@ const ProjectForm = ({ user, onProjectSaved, project, onCancel }) => {
           Meilenstein hinzufügen
         </button>
       </div>
-
-      <input
+      // Optionaler Datei-Upload, da in Meilensteinen integriert
+      {/* <input
         type="file"
         multiple
         accept="application/pdf,video/mp4,application/zip,image/*"
         onChange={(e) => setFiles(Array.from(e.target.files))}
         className="mb-3"
-      />
+      /> */}
 
       <div className="space-x-2">
         <button
