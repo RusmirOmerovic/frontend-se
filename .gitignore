@@ -21,3 +21,5 @@ yarn-error.log*
 
 node_modules/
 frontend-se.wiki 
+# DB
+supabase/

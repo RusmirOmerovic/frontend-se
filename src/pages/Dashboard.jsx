@@ -128,14 +128,19 @@ const Dashboard = () => {
     // user_profiles löschen
     await supabase.from("user_profiles").delete().eq("id", user.id);
 
-    // Nutzer über Server-Side Endpoint vollständig löschen
+    const userId = user.id;
+
+    // 1. Abmelden (löscht Session-Token aus Browser)
+    await supabase.auth.signOut();
+
+    // 2. Nutzer über Server-Side Endpoint vollständig löschen
     await fetch("/api/deleteUser", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId: user.id }),
+      body: JSON.stringify({ userId }),
     });
 
-    await supabase.auth.signOut();
+    // 3. Nur Info und Weiterleitung – keine DB-Calls mehr hier!
     alert("✅ Ihr Account wurde vollständig aus dem System entfernt.");
     window.location.href = "/";
   };
