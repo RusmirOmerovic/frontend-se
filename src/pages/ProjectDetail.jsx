@@ -83,7 +83,7 @@ const ProjectDetail = () => {
       <MilestoneList 
         projectId={project.id}
         user={currentUser}
-        ownerId={project.ownerId}
+        ownerId={project.owner_id}
         role={project.owner_id === currentUser?.id ? "student" : "tutor"}
         />
 
