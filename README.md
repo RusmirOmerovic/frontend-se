@@ -25,13 +25,13 @@ In Kombination mit **html-template-se** (Projektvorlage) und **se-tools** (Bash-
 ## 🖼️ Screenshots
 
 ### 🔍 Dashboard
-![Dashboard](./screenshots/dashboard.png)
+![Dashboard](./screenshots/Dashboard.png)
 
 ### 🧩 Projektübersicht
-![Projekt Detail](./screenshots/project-detail.png)
+![Projekt Detail](./screenshots/Dashboard.png)
 
 ### 🔐 Login
-![Login](./screenshots/login.png)
+![Login](./screenshots/Login.png)
 
 ---
 
