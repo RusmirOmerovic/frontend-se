@@ -77,7 +77,10 @@ const Dashboard = () => {
   const fetchProjects = async () => {
     if (!role || !user?.id) return;
 
-    let query = supabase.from("projects").select("*, user_profiles(vorname, nachname)");
+    let query = supabase
+    .from("projects")
+    .select("*, user_profiles(vorname, nachname)")
+    .order("created_at", { ascending: false });
     if (role === "student") {
       query = query.eq("owner_id", user.id);
     }
