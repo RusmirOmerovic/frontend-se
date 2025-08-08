@@ -1,50 +1,132 @@
-# Frontend SE
 
-This project uses Vite with React and Supabase. To run it locally you need to provide two environment variables and install the dependencies.
+# 📌 frontend-se
 
-## Environment Variables
+Eine vollständige **React + Supabase** Webanwendung zur Verwaltung von Software-Engineering-Projekten im Hochschulkontext.  
+Dieses Projekt ist Teil eines dreiteiligen Systems zur Unterstützung von Studierenden und Tutor:innen bei SE-Projekten.  
+In Kombination mit **html-template-se** (Projektvorlage) und **se-tools** (Bash-Toolset) lassen sich Projekte automatisiert und vorkonfiguriert verwalten.
 
-Create a `.env` file in the project root and add the Supabase connection details:
+---
 
-```bash
-VITE_SUPABASE_URL=<your-supabase-url>
-VITE_SUPABASE_ANON_KEY=<your-supabase-anon-key>
-SUPABASE_SERVICE_ROLE_KEY=<your-supabase-service-role-key>
+## ✨ Funktionen
+
+### 👩‍🎓 Für Studierende
+- Eigene Projekte anlegen, bearbeiten und löschen
+- Meilensteine definieren, verwalten und mit Dateien versehen
+- Kommentare schreiben und lesen
+- Persönliche Projektdaten und Dateien verwalten
+
+### 👨‍🏫 Für Tutor:innen
+- Live-Übersicht aller studentischen Projekte
+- Einsicht in Meilensteine, Dateien und Kommentare
+- Reine Leserechte, keine Bearbeitungsmöglichkeit
+
+---
+
+## 🖼️ Screenshots
+
+### 🔍 Dashboard
+![Dashboard](./screenshots/dashboard.png)
+
+### 🧩 Projektübersicht
+![Projekt Detail](./screenshots/project-detail.png)
+
+### 🔐 Login
+![Login](./screenshots/login.png)
+
+---
+
+## 🛠️ Technologien
+
+- **Frontend**: React (Vite, TailwindCSS, React Router)
+- **Backend**: Supabase (PostgreSQL, Auth, RLS Policies, Storage)
+- **Deployment**: [Vercel](https://vercel.com/) mit `.env`-Konfiguration
+- **Versionsverwaltung**: GitHub
+
+---
+
+## 📂 Projektstruktur
+
+```plaintext
+frontend-se/
+│── public/                # Statische Assets
+│── src/
+│   ├── components/        # Wiederverwendbare UI-Komponenten
+│   ├── pages/             # Hauptseiten (Dashboard, Login, etc.)
+│   ├── utils/             # Hilfsfunktionen
+│   ├── supabaseClient.js  # Supabase-Verbindung
+│   └── App.jsx
+│── supabase/              # Tabellen- & Policy-Definitionen (.json)
+│── .env.example           # Beispiel für Umgebungsvariablen
 ```
 
-The `SUPABASE_SERVICE_ROLE_KEY` is required by the server-side endpoint to remove a user via the Supabase Admin API.
+---
 
-## Development Commands
+## ⚙️ Lokale Installation
 
-Install dependencies and start the development server:
+1️⃣ Repository klonen  
+```bash
+git clone https://github.com/RusmirOmerovic/frontend-se.git
+cd frontend-se
+```
 
+2️⃣ Abhängigkeiten installieren  
 ```bash
 npm install
+```
+
+3️⃣ `.env`-Datei erstellen  
+```env
+VITE_SUPABASE_URL=deine_supabase_url
+VITE_SUPABASE_ANON_KEY=dein_anon_key
+VITE_SUPABASE_SERVICE_ROLE=dein_service_role_key
+```
+
+4️⃣ Lokalen Dev-Server starten  
+```bash
 npm run dev
 ```
 
-Run the unit tests with:
+---
 
-```bash
-npm test
-```
+## 🚀 Deployment
 
-Check the code style with:
+**Frontend ist vollständig Vercel-kompatibel.**
 
-```bash
-npm run lint
-```
+1. Neues Projekt in Vercel anlegen  
+2. GitHub-Repo verbinden  
+3. `.env`-Werte in Vercel unter Environment Variables eintragen  
+4. Deploy starten – fertig!
 
-## Dynamic Verification
+---
 
-After registering a user, Supabase sends a dynamic verification link to the provided e-mail address. The link redirects to the `/verify` route in this application where the verification is handled.
+## 🛡️ Sicherheit
 
-When signing up, Supabase emails a verification link to `${window.location.origin}/verify` (for example `https://frontend-se-cyan.vercel.app/verify` in production). The `Verify.jsx` page reads the `code` value from the URL and calls `supabase.auth.exchangeCodeForSession(code)` to create the session before finishing the sign-up flow.
+- Supabase-RLS schützt alle Datenbanktabellen
+- Tutor:innen erhalten ausschließlich Leserechte
+- Studierende sehen und verwalten nur ihre eigenen Inhalte
+- Der `service_role_key` darf **niemals** im Browser 
+  verwendet werden (.gitignore-Datei verwenden!)
 
-## Account Deletion
+---
 
-To fully remove an account, the dashboard calls the server-side endpoint `/api/deleteUser` after deleting the user's data. This endpoint uses the Supabase Service Role key and invokes `auth.admin.deleteUser(userId)`.
+## 👥 Mitwirkende
 
-## Rollenbasierte Nutzung
+- 👨‍💻 Michael Weber – Projektleitung  
+- 🧩 Niklas Theiler – Systemarchitektur  
+- 🔧 Rusmir Omerovic – Automatisierung & Testing
 
-Nach der E-Mail-Bestätigung wird der Nutzer neben den Profildaten auch mit einer Rolle in der Tabelle `user_roles` gespeichert. Aus der Mail-Endung wird automatisch die Rolle `tutor` (bei `@web.de`) oder `student` bestimmt. Studierende können Projekte anlegen, bearbeiten und löschen, Tutoren sehen alle Projekte und können diese kommentieren.
+---
+
+## 📄 Lizenz
+
+Dieses Projekt ist unter der **MIT-Lizenz** veröffentlicht – freie Nutzung & Anpassung erlaubt.
+
+---
+
+## 💡 Teil des Gesamtprojekts
+
+**frontend-se** ist einer von drei Bestandteilen eines vollständigen Systems für SE-Projektmanagement:
+
+1. `frontend-se` – Benutzeroberfläche & Verwaltung (React + Supabase)  
+2. `html-template-se` – Projektvorlage mit CI/CD & Docker  
+3. `se-tools` – Lokales Bash-Toolset für Automatisierung & Verwaltung
