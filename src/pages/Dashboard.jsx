@@ -77,7 +77,7 @@ const Dashboard = () => {
   const fetchProjects = async () => {
     if (!role || !user?.id) return;
 
-    let query = supabase.from("projects").select("*");
+    let query = supabase.from("projects").select("*, user_profiles(vorname, nachname)");
     if (role === "student") {
       query = query.eq("owner_id", user.id);
     }
@@ -299,6 +299,11 @@ const handleDeleteAccount = async () => {
         <ul className="space-y-4 mt-6">
           {projects.map((proj) => (
             <li key={proj.id} className="bg-white rounded shadow p-4">
+              {proj.user_profiles && (
+                <p className="text-sm text-green-800 font-semibold mb-1">
+                  👤 {proj.user_profiles.vorname} {proj.user_profiles.nachname}
+                </p>
+              )}
               <p>
                 <strong>📁 Projekt:</strong>{" "}
                 {proj.name ? (
