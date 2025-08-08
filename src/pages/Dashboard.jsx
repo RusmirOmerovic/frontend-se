@@ -303,7 +303,7 @@ const handleDeleteAccount = async () => {
           {projects.map((proj) => (
             <li key={proj.id} className="bg-white rounded shadow p-4">
               {proj.user_profiles && (
-                <p className="text-sm text-green-800 font-semibold mb-1">
+                <p className="text-sm text-green-600 font-semibold mb-1">
                   👤 {proj.user_profiles.vorname} {proj.user_profiles.nachname}
                 </p>
               )}
