@@ -24,11 +24,11 @@ In Kombination mit **html-template-se** (Projektvorlage) und **se-tools** (Bash-
 
 ## 🖼️ Screenshots
 
-### 🔍 Dashboard
+### 🔍 Dashboard für Projektüberblick
 ![Dashboard](./screenshots/Dashboard.png)
 
-### 🧩 Projektübersicht
-![Projekt Detail](./screenshots/Dashboard.png)
+### 🧩 Detailansicht für Projektdetails
+![Projekt Detail](./screenshots/Details.png)
 
 ### 🔐 Login
 ![Login](./screenshots/Login.png)
