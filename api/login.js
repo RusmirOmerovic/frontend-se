@@ -21,7 +21,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({ email, password })
     });
     const out = await r.json();
-    if (!r.ok) { res.status(r.status).json(out); return; }
+    if (!r.ok) { res.status(r.status).json(out); return; }  
 
     res.status(200).json({ access_token: out.access_token });
   } catch (e) {
